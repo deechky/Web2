@@ -1,0 +1,37 @@
+# .NET / Visual Studio build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Service Fabric local packaging/publish artifacts
+**/pkg/
+**/PublishProfiles/*.xml.user
+
+# NuGet
+packages/
+*.nupkg
+
+# Node / React frontend
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Environment secrets (kept locally, .env.example is committed instead)
+.env
+.env.local
+
+# IDE / OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

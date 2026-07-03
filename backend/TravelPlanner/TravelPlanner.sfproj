@@ -38,6 +38,7 @@
     <ProjectReference Include="Gateway\Gateway.csproj">
       <ServiceLaunchUrl>http://localhost:{ServicePort}/</ServiceLaunchUrl>
     </ProjectReference>
+    <ProjectReference Include="SharingService\SharingService.csproj" />
     <ProjectReference Include="TripService\TripService.csproj">
       <ServiceLaunchUrl>http://localhost:{ServicePort}/</ServiceLaunchUrl>
     </ProjectReference>

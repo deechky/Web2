@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import TripsPage from './pages/TripsPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import Layout from './components/Layout.jsx'
 
 function App() {
   return (
@@ -9,15 +11,14 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route
-        path="/"
         element={
           <ProtectedRoute>
-            <div className="flex min-h-screen items-center justify-center bg-slate-50">
-              <p className="text-slate-500">Planovi putovanja dolaze uskoro</p>
-            </div>
+            <Layout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/" element={<TripsPage />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

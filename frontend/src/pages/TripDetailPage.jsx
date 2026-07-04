@@ -3,16 +3,19 @@ import { useParams, Link } from 'react-router-dom'
 import tripService from '../services/tripService'
 import budgetService from '../services/budgetService'
 import Alert from '../components/ui/Alert.jsx'
+import Button from '../components/ui/Button.jsx'
 import DestinationsSection from '../components/trips/DestinationsSection.jsx'
 import ActivitiesSection from '../components/trips/ActivitiesSection.jsx'
 import ExpensesSection from '../components/trips/ExpensesSection.jsx'
 import ChecklistSection from '../components/trips/ChecklistSection.jsx'
+import ShareModal from '../components/trips/ShareModal.jsx'
 
 export default function TripDetailPage() {
   const { id } = useParams()
   const [plan, setPlan] = useState(null)
   const [budget, setBudget] = useState(null)
   const [error, setError] = useState('')
+  const [shareOpen, setShareOpen] = useState(false)
 
   const loadPlan = useCallback(async () => {
     try {
@@ -45,9 +48,14 @@ export default function TripDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link to="/" className="text-sm text-teal-600 hover:underline">
-        ← Nazad na planove
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link to="/" className="text-sm text-teal-600 hover:underline">
+          ← Nazad na planove
+        </Link>
+        <Button variant="secondary" onClick={() => setShareOpen(true)}>
+          Podeli
+        </Button>
+      </div>
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-900">{plan.naziv}</h1>
@@ -57,6 +65,8 @@ export default function TripDetailPage() {
         </p>
         {plan.napomene && <p className="mt-2 text-sm text-slate-500">Napomene: {plan.napomene}</p>}
       </div>
+
+      <ShareModal tripId={id} open={shareOpen} onClose={() => setShareOpen(false)} />
 
       {budget && (
         <div className="grid grid-cols-3 gap-4">

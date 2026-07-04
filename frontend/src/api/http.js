@@ -9,6 +9,15 @@ http.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
+  const tripMatch = config.url?.match(/\/api\/trips\/([0-9a-fA-F-]{36})/)
+  if (tripMatch) {
+    const shareCode = sessionStorage.getItem(`shareCode:${tripMatch[1]}`)
+    if (shareCode) {
+      config.headers['X-Share-Code'] = shareCode
+    }
+  }
+
   return config
 })
 

@@ -4,9 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SharingService.Data;
 using SharingService.Dtos;
 using SharingService.Mapping;
 using SharingService.Models;
@@ -18,14 +16,12 @@ namespace SharingService.Controllers
     [ApiController]
     public class SharesController : ControllerBase
     {
-        private readonly SharingDbContext _db;
         private readonly ShareStore _shareStore;
         private readonly TripClient _tripClient;
         private readonly IConfiguration _configuration;
 
-        public SharesController(SharingDbContext db, ShareStore shareStore, TripClient tripClient, IConfiguration configuration)
+        public SharesController(ShareStore shareStore, TripClient tripClient, IConfiguration configuration)
         {
-            _db = db;
             _shareStore = shareStore;
             _tripClient = tripClient;
             _configuration = configuration;
@@ -46,8 +42,14 @@ namespace SharingService.Controllers
                 return BadRequest(new { poruka = "Nepoznat tip deljenja." });
             }
 
+            var dozvoljeniEmails = ShareEmails.Normalize(dto.Emails);
+            if (tip == ShareTip.Edit && dozvoljeniEmails == null)
+            {
+                return BadRequest(new { poruka = "Za EDIT deljenje unesite bar jedan email naloga sa pravom izmene." });
+            }
+
             var defaultExpiryDays = _configuration.GetValue<int>("Sharing:DefaultExpiryDays");
-            var share = await _shareStore.CreateAsync(tripId, User.GetKorisnikId(), tip, defaultExpiryDays);
+            var share = await _shareStore.CreateAsync(tripId, User.GetKorisnikId(), tip, defaultExpiryDays, dozvoljeniEmails);
 
             return Created($"/api/trips/{tripId}/shares/{share.Id}", share.ToDto());
         }
@@ -62,12 +64,8 @@ namespace SharingService.Controllers
                 return Forbid();
             }
 
-            var shares = await _db.Shares
-                .Where(s => s.PlanId == tripId)
-                .Select(s => s.ToDto())
-                .ToListAsync();
-
-            return Ok(shares);
+            var shares = await _shareStore.GetForPlanAsync(tripId);
+            return Ok(shares.Select(s => s.ToDto()));
         }
 
         [HttpDelete("api/trips/{tripId}/shares/{id}")]
@@ -120,10 +118,15 @@ namespace SharingService.Controllers
 
         [HttpGet("api/shares/{code}/validate")]
         [AllowAnonymous]
-        public async Task<IActionResult> Validate(string code)
+        public async Task<IActionResult> Validate(string code, [FromQuery] string? email)
         {
             var share = await _shareStore.ResolveAsync(code);
             if (share == null || share.Opozvan || (share.IstekDatum.HasValue && share.IstekDatum.Value < DateTime.UtcNow))
+            {
+                return Ok(new { valid = false });
+            }
+
+            if (!share.IsEmailAllowed(email))
             {
                 return Ok(new { valid = false });
             }

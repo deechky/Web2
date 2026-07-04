@@ -15,5 +15,10 @@ namespace TripService.Security
         {
             return user.IsInRole("Admin");
         }
+
+        public static string? GetEmail(this ClaimsPrincipal user)
+        {
+            return user.FindFirst(ClaimTypes.Email)?.Value;
+        }
     }
 }

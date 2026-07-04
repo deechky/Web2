@@ -35,7 +35,7 @@ namespace TripService.Services
                 return plan;
             }
 
-            if (await HasValidEditShareAsync(planId))
+            if (await HasValidEditShareAsync(planId, user))
             {
                 return plan;
             }
@@ -43,7 +43,7 @@ namespace TripService.Services
             return null;
         }
 
-        private async Task<bool> HasValidEditShareAsync(Guid planId)
+        private async Task<bool> HasValidEditShareAsync(Guid planId, ClaimsPrincipal user)
         {
             var shareCode = _httpContextAccessor.HttpContext?.Request.Headers["X-Share-Code"].ToString();
             if (string.IsNullOrEmpty(shareCode))
@@ -51,7 +51,9 @@ namespace TripService.Services
                 return false;
             }
 
-            var result = await _shareClient.ValidateAsync(shareCode);
+            // Mejl dolazi iz JWT-a prijavljenog korisnika (pouzdano, ne iz headera koji bi mogao
+            // da se falsifikuje) — SharingService proverava da li je taj mejl na listi za EDIT.
+            var result = await _shareClient.ValidateAsync(shareCode, user.GetEmail());
             return result != null
                 && result.Valid
                 && result.PlanId == planId

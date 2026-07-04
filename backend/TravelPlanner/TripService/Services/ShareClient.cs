@@ -25,10 +25,11 @@ namespace TripService.Services
             _configuration = configuration;
         }
 
-        public async Task<ShareValidationResult?> ValidateAsync(string kod)
+        public async Task<ShareValidationResult?> ValidateAsync(string kod, string? email)
         {
             var sharingServiceUrl = _configuration["Services:SharingServiceUrl"];
-            var response = await _httpClient.GetAsync($"{sharingServiceUrl}/api/shares/{kod}/validate");
+            var emailQuery = string.IsNullOrEmpty(email) ? string.Empty : $"?email={Uri.EscapeDataString(email)}";
+            var response = await _httpClient.GetAsync($"{sharingServiceUrl}/api/shares/{kod}/validate{emailQuery}");
             if (!response.IsSuccessStatusCode)
             {
                 return null;

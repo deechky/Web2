@@ -11,6 +11,7 @@ namespace SharingService.Mapping
             Kod = share.Kod,
             Tip = share.Tip.ToString(),
             PlanId = share.PlanId,
+            DozvoljeniEmails = ShareEmails.ToList(share.DozvoljeniEmails),
             IstekDatum = share.IstekDatum,
             Opozvan = share.Opozvan,
             DatumKreiranja = share.DatumKreiranja

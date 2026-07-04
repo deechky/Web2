@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import activityService from '../../services/activityService'
+import useFeedback from '../../hooks/useFeedback'
 import Button from '../ui/Button.jsx'
 import Input from '../ui/Input.jsx'
 import Select from '../ui/Select.jsx'
@@ -11,7 +12,7 @@ const EMPTY_FORM = { naziv: '', datum: '', vreme: '', procenjeniTrosak: '', stat
 
 export default function ActivitiesSection({ tripId, onChanged }) {
   const [items, setItems] = useState([])
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
 
@@ -23,7 +24,7 @@ export default function ActivitiesSection({ tripId, onChanged }) {
     try {
       setItems(await activityService.getAll(tripId))
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje aktivnosti.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje aktivnosti.')
     }
   }
 
@@ -40,8 +41,10 @@ export default function ActivitiesSection({ tripId, onChanged }) {
   async function handleSubmit(e) {
     e.preventDefault()
     const validationError = validate()
-    setError(validationError)
-    if (validationError) return
+    if (validationError) {
+      showError(validationError)
+      return
+    }
 
     const dto = {
       naziv: form.naziv,
@@ -55,15 +58,17 @@ export default function ActivitiesSection({ tripId, onChanged }) {
       if (editingId) {
         const updated = await activityService.update(tripId, editingId, dto)
         setItems((prev) => prev.map((a) => (a.id === editingId ? updated : a)))
+        showSuccess('Aktivnost je uspešno izmenjena.')
       } else {
         const created = await activityService.create(tripId, dto)
         setItems((prev) => [...prev, created])
+        showSuccess('Aktivnost je uspešno dodata.')
       }
       setForm(EMPTY_FORM)
       setEditingId(null)
       onChanged?.()
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Čuvanje aktivnosti nije uspelo.')
+      showError(err.response?.data?.poruka || 'Čuvanje aktivnosti nije uspelo.')
     }
   }
 
@@ -76,19 +81,18 @@ export default function ActivitiesSection({ tripId, onChanged }) {
       procenjeniTrosak: activity.procenjeniTrosak ?? '',
       status: activity.status,
     })
-    setError('')
   }
 
   function cancelEdit() {
     setEditingId(null)
     setForm(EMPTY_FORM)
-    setError('')
   }
 
   async function handleRemove(id) {
     await activityService.remove(tripId, id)
     setItems((prev) => prev.filter((a) => a.id !== id))
     if (editingId === id) cancelEdit()
+    showSuccess('Aktivnost je obrisana.')
     onChanged?.()
   }
 
@@ -137,6 +141,11 @@ export default function ActivitiesSection({ tripId, onChanged }) {
         {error && (
           <div className="col-span-2">
             <Alert type="error">{error}</Alert>
+          </div>
+        )}
+        {success && (
+          <div className="col-span-2">
+            <Alert type="success">{success}</Alert>
           </div>
         )}
         <div className="col-span-2 flex gap-3">

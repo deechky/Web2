@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import destinationService from '../../services/destinationService'
+import useFeedback from '../../hooks/useFeedback'
 import Button from '../ui/Button.jsx'
 import Input from '../ui/Input.jsx'
 import Alert from '../ui/Alert.jsx'
@@ -8,7 +9,7 @@ const EMPTY_FORM = { naziv: '', lokacija: '', datumDolaska: '', datumOdlaska: ''
 
 export default function DestinationsSection({ tripId }) {
   const [items, setItems] = useState([])
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
 
@@ -20,7 +21,7 @@ export default function DestinationsSection({ tripId }) {
     try {
       setItems(await destinationService.getAll(tripId))
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje destinacija.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje destinacija.')
     }
   }
 
@@ -37,21 +38,25 @@ export default function DestinationsSection({ tripId }) {
   async function handleSubmit(e) {
     e.preventDefault()
     const validationError = validate()
-    setError(validationError)
-    if (validationError) return
+    if (validationError) {
+      showError(validationError)
+      return
+    }
 
     try {
       if (editingId) {
         const updated = await destinationService.update(tripId, editingId, form)
         setItems((prev) => prev.map((d) => (d.id === editingId ? updated : d)))
+        showSuccess('Destinacija je uspešno izmenjena.')
       } else {
         const created = await destinationService.create(tripId, form)
         setItems((prev) => [...prev, created])
+        showSuccess('Destinacija je uspešno dodata.')
       }
       setForm(EMPTY_FORM)
       setEditingId(null)
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Čuvanje destinacije nije uspelo.')
+      showError(err.response?.data?.poruka || 'Čuvanje destinacije nije uspelo.')
     }
   }
 
@@ -63,19 +68,18 @@ export default function DestinationsSection({ tripId }) {
       datumDolaska: d.datumDolaska?.slice(0, 10) || '',
       datumOdlaska: d.datumOdlaska?.slice(0, 10) || '',
     })
-    setError('')
   }
 
   function cancelEdit() {
     setEditingId(null)
     setForm(EMPTY_FORM)
-    setError('')
   }
 
   async function handleRemove(id) {
     await destinationService.remove(tripId, id)
     setItems((prev) => prev.filter((d) => d.id !== id))
     if (editingId === id) cancelEdit()
+    showSuccess('Destinacija je obrisana.')
   }
 
   return (
@@ -125,6 +129,11 @@ export default function DestinationsSection({ tripId }) {
         {error && (
           <div className="col-span-2">
             <Alert type="error">{error}</Alert>
+          </div>
+        )}
+        {success && (
+          <div className="col-span-2">
+            <Alert type="success">{success}</Alert>
           </div>
         )}
         <div className="col-span-2 flex gap-3">

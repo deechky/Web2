@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import checklistService from '../../services/checklistService'
+import useFeedback from '../../hooks/useFeedback'
 import Button from '../ui/Button.jsx'
 import Input from '../ui/Input.jsx'
 import Alert from '../ui/Alert.jsx'
 
 export default function ChecklistSection({ tripId }) {
   const [items, setItems] = useState([])
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
   const [naziv, setNaziv] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [editNaziv, setEditNaziv] = useState('')
@@ -19,16 +20,15 @@ export default function ChecklistSection({ tripId }) {
     try {
       setItems(await checklistService.getAll(tripId))
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje checklist-e.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje checklist-e.')
     }
   }
 
   async function handleAdd(e) {
     e.preventDefault()
-    setError('')
 
     if (!naziv) {
-      setError('Naziv stavke je obavezan.')
+      showError('Naziv stavke je obavezan.')
       return
     }
 
@@ -36,8 +36,9 @@ export default function ChecklistSection({ tripId }) {
       const created = await checklistService.create(tripId, { naziv })
       setItems((prev) => [...prev, created])
       setNaziv('')
+      showSuccess('Stavka je dodata.')
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Dodavanje stavke nije uspelo.')
+      showError(err.response?.data?.poruka || 'Dodavanje stavke nije uspelo.')
     }
   }
 
@@ -52,7 +53,6 @@ export default function ChecklistSection({ tripId }) {
   function startEdit(item) {
     setEditingId(item.id)
     setEditNaziv(item.naziv)
-    setError('')
   }
 
   function cancelEdit() {
@@ -62,7 +62,7 @@ export default function ChecklistSection({ tripId }) {
 
   async function saveEdit(item) {
     if (!editNaziv) {
-      setError('Naziv stavke je obavezan.')
+      showError('Naziv stavke je obavezan.')
       return
     }
     const updated = await checklistService.update(tripId, item.id, {
@@ -71,12 +71,14 @@ export default function ChecklistSection({ tripId }) {
     })
     setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
     cancelEdit()
+    showSuccess('Stavka je izmenjena.')
   }
 
   async function handleRemove(id) {
     await checklistService.remove(tripId, id)
     setItems((prev) => prev.filter((i) => i.id !== id))
     if (editingId === id) cancelEdit()
+    showSuccess('Stavka je obrisana.')
   }
 
   return (
@@ -127,6 +129,7 @@ export default function ChecklistSection({ tripId }) {
         </Button>
       </form>
       {error && <Alert type="error">{error}</Alert>}
+      {success && <Alert type="success">{success}</Alert>}
     </section>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import expenseService from '../../services/expenseService'
+import useFeedback from '../../hooks/useFeedback'
 import Button from '../ui/Button.jsx'
 import Input from '../ui/Input.jsx'
 import Select from '../ui/Select.jsx'
@@ -35,7 +36,7 @@ const COLUMN_DEFS = [
 
 export default function ExpensesSection({ tripId, onChanged }) {
   const [items, setItems] = useState([])
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
 
@@ -47,7 +48,7 @@ export default function ExpensesSection({ tripId, onChanged }) {
     try {
       setItems(await expenseService.getAll(tripId))
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje troškova.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje troškova.')
     }
   }
 
@@ -64,8 +65,10 @@ export default function ExpensesSection({ tripId, onChanged }) {
   async function handleSubmit(e) {
     e.preventDefault()
     const validationError = validate()
-    setError(validationError)
-    if (validationError) return
+    if (validationError) {
+      showError(validationError)
+      return
+    }
 
     const dto = {
       naziv: form.naziv,
@@ -78,15 +81,17 @@ export default function ExpensesSection({ tripId, onChanged }) {
       if (editingId) {
         const updated = await expenseService.update(tripId, editingId, dto)
         setItems((prev) => prev.map((t) => (t.id === editingId ? updated : t)))
+        showSuccess('Trošak je uspešno izmenjen.')
       } else {
         const created = await expenseService.create(tripId, dto)
         setItems((prev) => [...prev, created])
+        showSuccess('Trošak je uspešno dodat.')
       }
       setForm(EMPTY_FORM)
       setEditingId(null)
       onChanged?.()
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Čuvanje troška nije uspelo.')
+      showError(err.response?.data?.poruka || 'Čuvanje troška nije uspelo.')
     }
   }
 
@@ -98,19 +103,18 @@ export default function ExpensesSection({ tripId, onChanged }) {
       iznos: trosak.iznos,
       datum: trosak.datum?.slice(0, 10) || '',
     })
-    setError('')
   }
 
   function cancelEdit() {
     setEditingId(null)
     setForm(EMPTY_FORM)
-    setError('')
   }
 
   async function handleRemove(id) {
     await expenseService.remove(tripId, id)
     setItems((prev) => prev.filter((t) => t.id !== id))
     if (editingId === id) cancelEdit()
+    showSuccess('Trošak je obrisan.')
     onChanged?.()
   }
 
@@ -157,6 +161,11 @@ export default function ExpensesSection({ tripId, onChanged }) {
         {error && (
           <div className="col-span-2">
             <Alert type="error">{error}</Alert>
+          </div>
+        )}
+        {success && (
+          <div className="col-span-2">
+            <Alert type="success">{success}</Alert>
           </div>
         )}
         <div className="col-span-2 flex gap-3">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import shareService from '../../services/shareService'
+import useFeedback from '../../hooks/useFeedback'
 import Modal from '../ui/Modal.jsx'
 import Button from '../ui/Button.jsx'
 import Select from '../ui/Select.jsx'
@@ -9,7 +10,7 @@ import Alert from '../ui/Alert.jsx'
 export default function ShareModal({ tripId, open, onClose }) {
   const [shares, setShares] = useState([])
   const [tip, setTip] = useState('View')
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
 
   useEffect(() => {
     if (open) {
@@ -21,23 +22,24 @@ export default function ShareModal({ tripId, open, onClose }) {
     try {
       setShares(await shareService.list(tripId))
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje deljenja.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje deljenja.')
     }
   }
 
   async function handleCreate() {
-    setError('')
     try {
       const created = await shareService.create(tripId, tip)
       setShares((prev) => [...prev, created])
+      showSuccess('Kod za deljenje je generisan.')
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Kreiranje deljenja nije uspelo.')
+      showError(err.response?.data?.poruka || 'Kreiranje deljenja nije uspelo.')
     }
   }
 
   async function handleRevoke(id) {
     await shareService.revoke(tripId, id)
     setShares((prev) => prev.filter((s) => s.id !== id))
+    showSuccess('Deljenje je opozvano.')
   }
 
   return (
@@ -51,6 +53,7 @@ export default function ShareModal({ tripId, open, onClose }) {
           <Button onClick={handleCreate}>Generiši kod</Button>
         </div>
         {error && <Alert type="error">{error}</Alert>}
+        {success && <Alert type="success">{success}</Alert>}
 
         <ul className="space-y-3">
           {shares.map((share) => {

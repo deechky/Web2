@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import userService from '../services/userService'
+import useFeedback from '../hooks/useFeedback'
 import Button from '../components/ui/Button.jsx'
 import Alert from '../components/ui/Alert.jsx'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([])
-  const [error, setError] = useState('')
+  const { error, success, showSuccess, showError } = useFeedback()
 
   useEffect(() => {
     load()
@@ -15,19 +16,21 @@ export default function AdminUsersPage() {
     try {
       setUsers(await userService.getAll())
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Neuspešno učitavanje korisnika.')
+      showError(err.response?.data?.poruka || 'Neuspešno učitavanje korisnika.')
     }
   }
 
   async function handleRemove(id) {
     await userService.remove(id)
     setUsers((prev) => prev.filter((u) => u.id !== id))
+    showSuccess('Korisnik je obrisan.')
   }
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-slate-900">Administracija korisnika</h1>
       {error && <Alert type="error">{error}</Alert>}
+      {success && <Alert type="success">{success}</Alert>}
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50 text-slate-500">

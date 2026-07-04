@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTrips } from '../context/TripContext.jsx'
+import useFeedback from '../hooks/useFeedback'
 import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
 import Alert from '../components/ui/Alert.jsx'
 
 export default function TripsPage() {
   const { trips, loading, error, createTrip, removeTrip } = useTrips()
+  const { success, showSuccess, error: formError, showError: showFormError } = useFeedback()
   const [showForm, setShowForm] = useState(false)
-  const [formError, setFormError] = useState('')
   const [naziv, setNaziv] = useState('')
   const [pocetniDatum, setPocetniDatum] = useState('')
   const [krajnjiDatum, setKrajnjiDatum] = useState('')
@@ -16,18 +17,17 @@ export default function TripsPage() {
 
   async function handleCreate(e) {
     e.preventDefault()
-    setFormError('')
 
     if (!naziv || !pocetniDatum || !krajnjiDatum) {
-      setFormError('Naziv i datumi su obavezni.')
+      showFormError('Naziv i datumi su obavezni.')
       return
     }
     if (new Date(krajnjiDatum) < new Date(pocetniDatum)) {
-      setFormError('Krajnji datum ne može biti pre početnog.')
+      showFormError('Krajnji datum ne može biti pre početnog.')
       return
     }
     if (Number(planiraniBudzet) < 0) {
-      setFormError('Budžet ne može biti negativan.')
+      showFormError('Budžet ne može biti negativan.')
       return
     }
 
@@ -43,9 +43,15 @@ export default function TripsPage() {
       setKrajnjiDatum('')
       setPlaniraniBudzet('')
       setShowForm(false)
+      showSuccess('Plan je uspešno kreiran.')
     } catch (err) {
-      setFormError(err.response?.data?.poruka || 'Kreiranje plana nije uspelo.')
+      showFormError(err.response?.data?.poruka || 'Kreiranje plana nije uspelo.')
     }
+  }
+
+  async function handleRemove(id) {
+    await removeTrip(id)
+    showSuccess('Plan je obrisan.')
   }
 
   return (
@@ -87,6 +93,7 @@ export default function TripsPage() {
       )}
 
       {error && <Alert type="error">{error}</Alert>}
+      {success && <Alert type="success">{success}</Alert>}
       {loading && <p className="text-slate-500">Učitavanje...</p>}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -99,7 +106,7 @@ export default function TripsPage() {
               {trip.pocetniDatum} — {trip.krajnjiDatum}
             </p>
             <p className="mt-1 text-sm text-slate-500">Budžet: {trip.planiraniBudzet}</p>
-            <Button variant="danger" className="mt-3" onClick={() => removeTrip(trip.id)}>
+            <Button variant="danger" className="mt-3" onClick={() => handleRemove(trip.id)}>
               Obriši
             </Button>
           </div>

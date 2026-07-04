@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import tripService from '../services/tripService'
 import budgetService from '../services/budgetService'
+import useFeedback from '../hooks/useFeedback'
 import Alert from '../components/ui/Alert.jsx'
 import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
@@ -19,7 +20,7 @@ export default function TripDetailPage() {
   const [shareOpen, setShareOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null)
-  const [formError, setFormError] = useState('')
+  const { error: formError, success, showSuccess, showError: showFormError } = useFeedback()
 
   const loadPlan = useCallback(async () => {
     try {
@@ -51,24 +52,22 @@ export default function TripDetailPage() {
       planiraniBudzet: plan.planiraniBudzet,
       napomene: plan.napomene || '',
     })
-    setFormError('')
     setEditing(true)
   }
 
   async function handleSave(e) {
     e.preventDefault()
-    setFormError('')
 
     if (!form.naziv || !form.pocetniDatum || !form.krajnjiDatum) {
-      setFormError('Naziv i datumi su obavezni.')
+      showFormError('Naziv i datumi su obavezni.')
       return
     }
     if (new Date(form.krajnjiDatum) < new Date(form.pocetniDatum)) {
-      setFormError('Krajnji datum ne može biti pre početnog.')
+      showFormError('Krajnji datum ne može biti pre početnog.')
       return
     }
     if (Number(form.planiraniBudzet) < 0) {
-      setFormError('Budžet ne može biti negativan.')
+      showFormError('Budžet ne može biti negativan.')
       return
     }
 
@@ -80,8 +79,9 @@ export default function TripDetailPage() {
       setPlan(updated)
       setEditing(false)
       loadBudget()
+      showSuccess('Plan je uspešno izmenjen.')
     } catch (err) {
-      setFormError(err.response?.data?.poruka || 'Čuvanje izmena nije uspelo.')
+      showFormError(err.response?.data?.poruka || 'Čuvanje izmena nije uspelo.')
     }
   }
 
@@ -164,6 +164,11 @@ export default function TripDetailPage() {
               {plan.pocetniDatum} — {plan.krajnjiDatum}
             </p>
             {plan.napomene && <p className="mt-2 text-sm text-slate-500">Napomene: {plan.napomene}</p>}
+            {success && (
+              <div className="mt-3">
+                <Alert type="success">{success}</Alert>
+              </div>
+            )}
           </>
         )}
       </div>

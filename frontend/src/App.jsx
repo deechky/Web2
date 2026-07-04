@@ -4,6 +4,7 @@ import RegisterPage from './pages/RegisterPage.jsx'
 import TripsPage from './pages/TripsPage.jsx'
 import TripDetailPage from './pages/TripDetailPage.jsx'
 import ShareViewPage from './pages/ShareViewPage.jsx'
+import AdminUsersPage from './pages/AdminUsersPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Layout from './components/Layout.jsx'
 
@@ -22,6 +23,7 @@ function App() {
       >
         <Route path="/" element={<TripsPage />} />
         <Route path="/trips/:id" element={<TripDetailPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

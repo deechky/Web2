@@ -55,6 +55,7 @@ namespace AuthService
 
                         builder.Services.AddScoped<JwtTokenService>();
                         builder.Services.AddScoped<AuthLogic>();
+                        builder.Services.AddHttpClient<TripClient>();
 
                         builder.Services.AddCors(options =>
                         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AuthService.Data;
 using AuthService.Dtos;
+using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,12 @@ namespace AuthService.Controllers
     public class UsersController : ControllerBase
     {
         private readonly AuthDbContext _db;
+        private readonly TripClient _tripClient;
 
-        public UsersController(AuthDbContext db)
+        public UsersController(AuthDbContext db, TripClient tripClient)
         {
             _db = db;
+            _tripClient = tripClient;
         }
 
         [HttpGet]
@@ -48,10 +51,10 @@ namespace AuthService.Controllers
                 return NotFound(new { poruka = "Korisnik nije pronađen." });
             }
 
-            // TODO: kad TripService bude gotov, ovde treba obrisati i sve planove ovog korisnika
-            // (cross-service brisanje) — za sada se briše samo nalog u AuthService bazi.
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
+
+            await _tripClient.DeleteUserTripsAsync(id);
 
             return NoContent();
         }

@@ -7,10 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
-using Microsoft.ServiceFabric.Data;
 
 namespace Gateway
 {
@@ -39,14 +39,27 @@ namespace Gateway
                         var builder = WebApplication.CreateBuilder();
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
+
+                        builder.Services.AddReverseProxy()
+                            .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+                        builder.Services.AddCors(options =>
+                        {
+                            options.AddPolicy("Frontend", policy =>
+                                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+                        });
+
                         builder.WebHost
                                     .UseKestrel()
                                     .UseContentRoot(Directory.GetCurrentDirectory())
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url);
+
                         var app = builder.Build();
-                        app.MapGet("/", () => "Hello World!");
-                        
+
+                        app.UseCors("Frontend");
+                        app.MapReverseProxy();
+
                         return app;
 
                     }))

@@ -48,7 +48,8 @@ namespace TripService.Controllers
         [HttpPost]
         public async Task<ActionResult<AktivnostDto>> Create(Guid tripId, AktivnostCreateDto dto)
         {
-            if (await _planAccess.FindAccessiblePlanAsync(tripId, User) == null)
+            var plan = await _planAccess.FindAccessiblePlanAsync(tripId, User);
+            if (plan == null)
             {
                 return NotFound();
             }
@@ -64,6 +65,10 @@ namespace TripService.Controllers
             if (!Enum.TryParse<AktivnostStatus>(dto.Status, out _))
             {
                 return BadRequest(new { poruka = "Nepoznat status aktivnosti." });
+            }
+            if (dto.Datum < plan.PocetniDatum || dto.Datum > plan.KrajnjiDatum)
+            {
+                return BadRequest(new { poruka = "Datum aktivnosti mora biti u okviru trajanja plana." });
             }
 
             var aktivnost = dto.ToEntity(tripId);
@@ -93,7 +98,8 @@ namespace TripService.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<AktivnostDto>> Update(Guid tripId, Guid id, AktivnostUpdateDto dto)
         {
-            if (await _planAccess.FindAccessiblePlanAsync(tripId, User) == null)
+            var plan = await _planAccess.FindAccessiblePlanAsync(tripId, User);
+            if (plan == null)
             {
                 return NotFound();
             }
@@ -111,6 +117,10 @@ namespace TripService.Controllers
             if (!Enum.TryParse<AktivnostStatus>(dto.Status, out _))
             {
                 return BadRequest(new { poruka = "Nepoznat status aktivnosti." });
+            }
+            if (dto.Datum < plan.PocetniDatum || dto.Datum > plan.KrajnjiDatum)
+            {
+                return BadRequest(new { poruka = "Datum aktivnosti mora biti u okviru trajanja plana." });
             }
 
             aktivnost.ApplyUpdate(dto);

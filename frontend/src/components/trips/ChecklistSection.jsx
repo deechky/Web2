@@ -8,6 +8,8 @@ export default function ChecklistSection({ tripId }) {
   const [items, setItems] = useState([])
   const [error, setError] = useState('')
   const [naziv, setNaziv] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [editNaziv, setEditNaziv] = useState('')
 
   useEffect(() => {
     load()
@@ -47,9 +49,34 @@ export default function ChecklistSection({ tripId }) {
     setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
   }
 
+  function startEdit(item) {
+    setEditingId(item.id)
+    setEditNaziv(item.naziv)
+    setError('')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditNaziv('')
+  }
+
+  async function saveEdit(item) {
+    if (!editNaziv) {
+      setError('Naziv stavke je obavezan.')
+      return
+    }
+    const updated = await checklistService.update(tripId, item.id, {
+      naziv: editNaziv,
+      zavrseno: item.zavrseno,
+    })
+    setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)))
+    cancelEdit()
+  }
+
   async function handleRemove(id) {
     await checklistService.remove(tripId, id)
     setItems((prev) => prev.filter((i) => i.id !== id))
+    if (editingId === id) cancelEdit()
   }
 
   return (
@@ -58,15 +85,32 @@ export default function ChecklistSection({ tripId }) {
       <ul className="mb-4 space-y-2">
         {items.map((item) => (
           <li key={item.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={item.zavrseno} onChange={() => handleToggle(item)} />
-              <span className={item.zavrseno ? 'text-slate-400 line-through' : 'text-slate-700'}>
-                {item.naziv}
-              </span>
-            </label>
-            <Button variant="danger" onClick={() => handleRemove(item.id)}>
-              Obriši
-            </Button>
+            {editingId === item.id ? (
+              <div className="flex flex-1 items-center gap-2">
+                <Input value={editNaziv} onChange={(e) => setEditNaziv(e.target.value)} className="flex-1" />
+                <Button onClick={() => saveEdit(item)}>Sačuvaj</Button>
+                <Button variant="secondary" onClick={cancelEdit}>
+                  Otkaži
+                </Button>
+              </div>
+            ) : (
+              <>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={item.zavrseno} onChange={() => handleToggle(item)} />
+                  <span className={item.zavrseno ? 'text-slate-400 line-through' : 'text-slate-700'}>
+                    {item.naziv}
+                  </span>
+                </label>
+                <span className="flex gap-2">
+                  <Button variant="secondary" onClick={() => startEdit(item)}>
+                    Uredi
+                  </Button>
+                  <Button variant="danger" onClick={() => handleRemove(item.id)}>
+                    Obriši
+                  </Button>
+                </span>
+              </>
+            )}
           </li>
         ))}
         {items.length === 0 && <li className="text-sm text-slate-500">Nema stavki.</li>}

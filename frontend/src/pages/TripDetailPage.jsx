@@ -4,6 +4,7 @@ import tripService from '../services/tripService'
 import budgetService from '../services/budgetService'
 import Alert from '../components/ui/Alert.jsx'
 import Button from '../components/ui/Button.jsx'
+import Input from '../components/ui/Input.jsx'
 import DestinationsSection from '../components/trips/DestinationsSection.jsx'
 import ActivitiesSection from '../components/trips/ActivitiesSection.jsx'
 import ExpensesSection from '../components/trips/ExpensesSection.jsx'
@@ -16,6 +17,9 @@ export default function TripDetailPage() {
   const [budget, setBudget] = useState(null)
   const [error, setError] = useState('')
   const [shareOpen, setShareOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState(null)
+  const [formError, setFormError] = useState('')
 
   const loadPlan = useCallback(async () => {
     try {
@@ -38,6 +42,49 @@ export default function TripDetailPage() {
     loadBudget()
   }, [loadPlan, loadBudget])
 
+  function startEdit() {
+    setForm({
+      naziv: plan.naziv,
+      opis: plan.opis || '',
+      pocetniDatum: plan.pocetniDatum?.slice(0, 10) || '',
+      krajnjiDatum: plan.krajnjiDatum?.slice(0, 10) || '',
+      planiraniBudzet: plan.planiraniBudzet,
+      napomene: plan.napomene || '',
+    })
+    setFormError('')
+    setEditing(true)
+  }
+
+  async function handleSave(e) {
+    e.preventDefault()
+    setFormError('')
+
+    if (!form.naziv || !form.pocetniDatum || !form.krajnjiDatum) {
+      setFormError('Naziv i datumi su obavezni.')
+      return
+    }
+    if (new Date(form.krajnjiDatum) < new Date(form.pocetniDatum)) {
+      setFormError('Krajnji datum ne može biti pre početnog.')
+      return
+    }
+    if (Number(form.planiraniBudzet) < 0) {
+      setFormError('Budžet ne može biti negativan.')
+      return
+    }
+
+    try {
+      const updated = await tripService.update(id, {
+        ...form,
+        planiraniBudzet: Number(form.planiraniBudzet) || 0,
+      })
+      setPlan(updated)
+      setEditing(false)
+      loadBudget()
+    } catch (err) {
+      setFormError(err.response?.data?.poruka || 'Čuvanje izmena nije uspelo.')
+    }
+  }
+
   if (error) {
     return <Alert type="error">{error}</Alert>
   }
@@ -58,12 +105,67 @@ export default function TripDetailPage() {
       </div>
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">{plan.naziv}</h1>
-        {plan.opis && <p className="mt-1 text-slate-600">{plan.opis}</p>}
-        <p className="mt-2 text-sm text-slate-500">
-          {plan.pocetniDatum} — {plan.krajnjiDatum}
-        </p>
-        {plan.napomene && <p className="mt-2 text-sm text-slate-500">Napomene: {plan.napomene}</p>}
+        {editing ? (
+          <form onSubmit={handleSave} className="space-y-3">
+            <Input
+              label="Naziv"
+              value={form.naziv}
+              onChange={(e) => setForm((f) => ({ ...f, naziv: e.target.value }))}
+            />
+            <Input
+              label="Opis"
+              value={form.opis}
+              onChange={(e) => setForm((f) => ({ ...f, opis: e.target.value }))}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Početni datum"
+                type="date"
+                value={form.pocetniDatum}
+                onChange={(e) => setForm((f) => ({ ...f, pocetniDatum: e.target.value }))}
+              />
+              <Input
+                label="Krajnji datum"
+                type="date"
+                value={form.krajnjiDatum}
+                onChange={(e) => setForm((f) => ({ ...f, krajnjiDatum: e.target.value }))}
+              />
+            </div>
+            <Input
+              label="Planirani budžet"
+              type="number"
+              min="0"
+              value={form.planiraniBudzet}
+              onChange={(e) => setForm((f) => ({ ...f, planiraniBudzet: e.target.value }))}
+            />
+            <Input
+              label="Napomene"
+              value={form.napomene}
+              onChange={(e) => setForm((f) => ({ ...f, napomene: e.target.value }))}
+            />
+            {formError && <Alert type="error">{formError}</Alert>}
+            <div className="flex gap-3">
+              <Button type="submit">Sačuvaj izmene</Button>
+              <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
+                Otkaži
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <div className="flex items-start justify-between">
+              <h1 className="text-2xl font-semibold text-slate-900">{plan.naziv}</h1>
+              <Button variant="secondary" onClick={startEdit}>
+                Uredi plan
+              </Button>
+            </div>
+            {plan.opis && <p className="mt-1 text-slate-600">{plan.opis}</p>}
+            <p className="mt-2 text-sm text-slate-500">
+              {plan.pocetniDatum} — {plan.krajnjiDatum}
+            </p>
+            {plan.napomene && <p className="mt-2 text-sm text-slate-500">Napomene: {plan.napomene}</p>}
+          </>
+        )}
       </div>
 
       <ShareModal tripId={id} open={shareOpen} onClose={() => setShareOpen(false)} />

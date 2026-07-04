@@ -4,13 +4,13 @@ import Button from '../ui/Button.jsx'
 import Input from '../ui/Input.jsx'
 import Alert from '../ui/Alert.jsx'
 
+const EMPTY_FORM = { naziv: '', lokacija: '', datumDolaska: '', datumOdlaska: '' }
+
 export default function DestinationsSection({ tripId }) {
   const [items, setItems] = useState([])
   const [error, setError] = useState('')
-  const [naziv, setNaziv] = useState('')
-  const [lokacija, setLokacija] = useState('')
-  const [datumDolaska, setDatumDolaska] = useState('')
-  const [datumOdlaska, setDatumOdlaska] = useState('')
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [editingId, setEditingId] = useState(null)
 
   useEffect(() => {
     load()
@@ -24,39 +24,58 @@ export default function DestinationsSection({ tripId }) {
     }
   }
 
-  async function handleAdd(e) {
-    e.preventDefault()
-    setError('')
+  function validate() {
+    if (!form.naziv || !form.lokacija || !form.datumDolaska || !form.datumOdlaska) {
+      return 'Sva polja su obavezna.'
+    }
+    if (new Date(form.datumDolaska) > new Date(form.datumOdlaska)) {
+      return 'Datum dolaska ne može biti posle datuma odlaska.'
+    }
+    return ''
+  }
 
-    if (!naziv || !lokacija || !datumDolaska || !datumOdlaska) {
-      setError('Sva polja su obavezna.')
-      return
-    }
-    if (new Date(datumDolaska) > new Date(datumOdlaska)) {
-      setError('Datum dolaska ne može biti posle datuma odlaska.')
-      return
-    }
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const validationError = validate()
+    setError(validationError)
+    if (validationError) return
 
     try {
-      const created = await destinationService.create(tripId, {
-        naziv,
-        lokacija,
-        datumDolaska,
-        datumOdlaska,
-      })
-      setItems((prev) => [...prev, created])
-      setNaziv('')
-      setLokacija('')
-      setDatumDolaska('')
-      setDatumOdlaska('')
+      if (editingId) {
+        const updated = await destinationService.update(tripId, editingId, form)
+        setItems((prev) => prev.map((d) => (d.id === editingId ? updated : d)))
+      } else {
+        const created = await destinationService.create(tripId, form)
+        setItems((prev) => [...prev, created])
+      }
+      setForm(EMPTY_FORM)
+      setEditingId(null)
     } catch (err) {
-      setError(err.response?.data?.poruka || 'Dodavanje destinacije nije uspelo.')
+      setError(err.response?.data?.poruka || 'Čuvanje destinacije nije uspelo.')
     }
+  }
+
+  function startEdit(d) {
+    setEditingId(d.id)
+    setForm({
+      naziv: d.naziv,
+      lokacija: d.lokacija,
+      datumDolaska: d.datumDolaska?.slice(0, 10) || '',
+      datumOdlaska: d.datumOdlaska?.slice(0, 10) || '',
+    })
+    setError('')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setForm(EMPTY_FORM)
+    setError('')
   }
 
   async function handleRemove(id) {
     await destinationService.remove(tripId, id)
     setItems((prev) => prev.filter((d) => d.id !== id))
+    if (editingId === id) cancelEdit()
   }
 
   return (
@@ -68,36 +87,54 @@ export default function DestinationsSection({ tripId }) {
             <span>
               {d.naziv} — {d.lokacija} ({d.datumDolaska} - {d.datumOdlaska})
             </span>
-            <Button variant="danger" onClick={() => handleRemove(d.id)}>
-              Obriši
-            </Button>
+            <span className="flex gap-2">
+              <Button variant="secondary" onClick={() => startEdit(d)}>
+                Uredi
+              </Button>
+              <Button variant="danger" onClick={() => handleRemove(d.id)}>
+                Obriši
+              </Button>
+            </span>
           </li>
         ))}
         {items.length === 0 && <li className="text-sm text-slate-500">Nema unesenih destinacija.</li>}
       </ul>
-      <form onSubmit={handleAdd} className="grid grid-cols-2 gap-3">
-        <Input label="Naziv" value={naziv} onChange={(e) => setNaziv(e.target.value)} />
-        <Input label="Lokacija" value={lokacija} onChange={(e) => setLokacija(e.target.value)} />
+      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+        <Input
+          label="Naziv"
+          value={form.naziv}
+          onChange={(e) => setForm((f) => ({ ...f, naziv: e.target.value }))}
+        />
+        <Input
+          label="Lokacija"
+          value={form.lokacija}
+          onChange={(e) => setForm((f) => ({ ...f, lokacija: e.target.value }))}
+        />
         <Input
           label="Datum dolaska"
           type="date"
-          value={datumDolaska}
-          onChange={(e) => setDatumDolaska(e.target.value)}
+          value={form.datumDolaska}
+          onChange={(e) => setForm((f) => ({ ...f, datumDolaska: e.target.value }))}
         />
         <Input
           label="Datum odlaska"
           type="date"
-          value={datumOdlaska}
-          onChange={(e) => setDatumOdlaska(e.target.value)}
+          value={form.datumOdlaska}
+          onChange={(e) => setForm((f) => ({ ...f, datumOdlaska: e.target.value }))}
         />
         {error && (
           <div className="col-span-2">
             <Alert type="error">{error}</Alert>
           </div>
         )}
-        <Button type="submit" className="col-span-2">
-          Dodaj destinaciju
-        </Button>
+        <div className="col-span-2 flex gap-3">
+          <Button type="submit">{editingId ? 'Sačuvaj izmene' : 'Dodaj destinaciju'}</Button>
+          {editingId && (
+            <Button type="button" variant="secondary" onClick={cancelEdit}>
+              Otkaži
+            </Button>
+          )}
+        </div>
       </form>
     </section>
   )

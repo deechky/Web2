@@ -1,4 +1,6 @@
-export default function CalendarView({ activities }) {
+import Button from '../ui/Button.jsx'
+
+export default function CalendarView({ activities, onEdit, onRemove }) {
   const grouped = activities.reduce((acc, activity) => {
     const key = activity.datum
     if (!acc[key]) acc[key] = []
@@ -19,9 +21,19 @@ export default function CalendarView({ activities }) {
           <p className="mb-2 text-sm font-semibold text-teal-700">{date}</p>
           <ul className="space-y-1">
             {grouped[date].map((activity) => (
-              <li key={activity.id} className="text-sm text-slate-700">
-                {activity.vreme ? `${activity.vreme} — ` : ''}
-                {activity.naziv} ({activity.status})
+              <li key={activity.id} className="flex items-center justify-between text-sm text-slate-700">
+                <span>
+                  {activity.vreme ? `${activity.vreme} — ` : ''}
+                  {activity.naziv} ({activity.status})
+                </span>
+                <span className="flex gap-2">
+                  <Button variant="secondary" onClick={() => onEdit(activity)}>
+                    Uredi
+                  </Button>
+                  <Button variant="danger" onClick={() => onRemove(activity.id)}>
+                    Obriši
+                  </Button>
+                </span>
               </li>
             ))}
           </ul>

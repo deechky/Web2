@@ -56,6 +56,12 @@ namespace AuthService
                         builder.Services.AddScoped<JwtTokenService>();
                         builder.Services.AddScoped<AuthLogic>();
 
+                        builder.Services.AddCors(options =>
+                        {
+                            options.AddPolicy("Frontend", policy =>
+                                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+                        });
+
                         var jwtSection = builder.Configuration.GetSection("Jwt");
                         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(options =>
@@ -113,6 +119,7 @@ namespace AuthService
                             app.UseSwaggerUI();
                         }
 
+                        app.UseCors("Frontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.MapControllers();

@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "ag-grid-community": "^36.0.0",
+    "ag-grid-react": "^36.0.0",
     "axios": "^1.18.1",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",

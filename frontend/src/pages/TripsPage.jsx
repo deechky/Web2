@@ -2,6 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTrips } from '../context/TripContext.jsx'
 import useFeedback from '../hooks/useFeedback'
+import destinationService from '../services/destinationService'
+import activityService from '../services/activityService'
+import expenseService from '../services/expenseService'
+import checklistService from '../services/checklistService'
+import budgetService from '../services/budgetService'
+import { generateTripPdf } from '../utils/pdfReport'
 import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
 import Alert from '../components/ui/Alert.jsx'
@@ -9,6 +15,7 @@ import Alert from '../components/ui/Alert.jsx'
 export default function TripsPage() {
   const { trips, loading, error, createTrip, removeTrip } = useTrips()
   const { success, showSuccess, error: formError, showError: showFormError } = useFeedback()
+  const [downloadingId, setDownloadingId] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [naziv, setNaziv] = useState('')
   const [pocetniDatum, setPocetniDatum] = useState('')
@@ -52,6 +59,25 @@ export default function TripsPage() {
   async function handleRemove(id) {
     await removeTrip(id)
     showSuccess('Plan je obrisan.')
+  }
+
+  async function handleDownloadPdf(trip) {
+    setDownloadingId(trip.id)
+    try {
+      const [destinacije, aktivnosti, troskovi, checklistStavke, budget] = await Promise.all([
+        destinationService.getAll(trip.id),
+        activityService.getAll(trip.id),
+        expenseService.getAll(trip.id),
+        checklistService.getAll(trip.id),
+        budgetService.get(trip.id),
+      ])
+      generateTripPdf({ plan: trip, destinacije, aktivnosti, troskovi, checklistStavke, budget })
+      showSuccess('PDF izveštaj je preuzet.')
+    } catch (err) {
+      showFormError(err.response?.data?.poruka || 'Preuzimanje PDF izveštaja nije uspelo.')
+    } finally {
+      setDownloadingId(null)
+    }
   }
 
   return (
@@ -106,9 +132,18 @@ export default function TripsPage() {
               {trip.pocetniDatum} — {trip.krajnjiDatum}
             </p>
             <p className="mt-1 text-sm text-slate-500">Budžet: {trip.planiraniBudzet}</p>
-            <Button variant="danger" className="mt-3" onClick={() => handleRemove(trip.id)}>
-              Obriši
-            </Button>
+            <div className="mt-3 flex gap-2">
+              <Button
+                variant="secondary"
+                disabled={downloadingId === trip.id}
+                onClick={() => handleDownloadPdf(trip)}
+              >
+                {downloadingId === trip.id ? 'Priprema...' : 'Preuzmi PDF'}
+              </Button>
+              <Button variant="danger" onClick={() => handleRemove(trip.id)}>
+                Obriši
+              </Button>
+            </div>
           </div>
         ))}
         {!loading && trips.length === 0 && (

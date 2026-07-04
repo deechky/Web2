@@ -49,5 +49,21 @@ namespace TripService.Controllers
 
             return Ok(fullPlan);
         }
+
+        [HttpDelete("by-user/{userId}")]
+        public async Task<IActionResult> DeleteAllForUser(Guid userId, [FromHeader(Name = "X-Internal-Key")] string? internalKey)
+        {
+            var expectedKey = _configuration["Internal:ApiKey"];
+            if (string.IsNullOrEmpty(expectedKey) || internalKey != expectedKey)
+            {
+                return Unauthorized();
+            }
+
+            var plans = await _db.Plans.Where(p => p.KorisnikId == userId).ToListAsync();
+            _db.Plans.RemoveRange(plans);
+            await _db.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

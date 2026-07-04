@@ -55,7 +55,7 @@ namespace SharingService
                             options.UseSqlServer(builder.Configuration.GetConnectionString("SharingDB")));
 
                         builder.Services.AddScoped<ShareStore>();
-                        builder.Services.AddHttpClient();
+                        builder.Services.AddHttpClient<TripClient>();
 
                         builder.Services.AddCors(options =>
                         {

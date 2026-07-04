@@ -53,6 +53,8 @@ namespace TripService
                             options.UseSqlServer(builder.Configuration.GetConnectionString("TripsDB")));
 
                         builder.Services.AddScoped<PlanAccess>();
+                        builder.Services.AddHttpContextAccessor();
+                        builder.Services.AddHttpClient<ShareClient>();
 
                         builder.Services.AddCors(options =>
                         {

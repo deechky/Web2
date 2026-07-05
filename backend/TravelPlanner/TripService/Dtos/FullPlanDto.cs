@@ -9,5 +9,8 @@ namespace TripService.Dtos
         public List<AktivnostDto> Aktivnosti { get; set; } = new();
         public List<TrosakDto> Troskovi { get; set; } = new();
         public List<ChecklistStavkaDto> ChecklistStavke { get; set; } = new();
+        public List<BeleskaDto> Beleske { get; set; } = new();
+        public List<PodsetnikDto> Podsetnici { get; set; } = new();
+        public BudgetDto Budzet { get; set; } = null!;
     }
 }

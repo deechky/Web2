@@ -38,13 +38,25 @@ namespace TripService.Controllers
                 return NotFound();
             }
 
+            var potrosenoTroskovi = await _db.Troskovi.Where(t => t.PlanId == id).SumAsync(t => (decimal?)t.Iznos) ?? 0;
+            var potrosenoAktivnosti = await _db.Aktivnosti.Where(a => a.PlanId == id).SumAsync(a => (decimal?)a.ProcenjeniTrosak) ?? 0;
+            var potroseno = potrosenoTroskovi + potrosenoAktivnosti;
+
             var fullPlan = new FullPlanDto
             {
                 Plan = plan.ToDto(),
                 Destinacije = await _db.Destinacije.Where(d => d.PlanId == id).Select(d => d.ToDto()).ToListAsync(),
                 Aktivnosti = await _db.Aktivnosti.Where(a => a.PlanId == id).Select(a => a.ToDto()).ToListAsync(),
                 Troskovi = await _db.Troskovi.Where(t => t.PlanId == id).Select(t => t.ToDto()).ToListAsync(),
-                ChecklistStavke = await _db.ChecklistStavke.Where(c => c.PlanId == id).Select(c => c.ToDto()).ToListAsync()
+                ChecklistStavke = await _db.ChecklistStavke.Where(c => c.PlanId == id).Select(c => c.ToDto()).ToListAsync(),
+                Beleske = await _db.Beleske.Where(b => b.PlanId == id).OrderByDescending(b => b.DatumKreiranja).Select(b => b.ToDto()).ToListAsync(),
+                Podsetnici = await _db.Podsetnici.Where(r => r.PlanId == id).OrderBy(r => r.Datum).Select(r => r.ToDto()).ToListAsync(),
+                Budzet = new BudgetDto
+                {
+                    Planirano = plan.PlaniraniBudzet,
+                    Potroseno = potroseno,
+                    Preostalo = plan.PlaniraniBudzet - potroseno
+                }
             };
 
             return Ok(fullPlan);

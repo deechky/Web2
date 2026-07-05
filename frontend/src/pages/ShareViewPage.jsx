@@ -82,6 +82,9 @@ export default function ShareViewPage() {
   const aktivnosti = data.plan?.aktivnosti || []
   const troskovi = data.plan?.troskovi || []
   const checklistStavke = data.plan?.checklistStavke || []
+  const beleske = data.plan?.beleske || []
+  const podsetnici = data.plan?.podsetnici || []
+  const budzet = data.plan?.budzet
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8">
@@ -96,6 +99,27 @@ export default function ShareViewPage() {
             {plan?.pocetniDatum} — {plan?.krajnjiDatum}
           </p>
         </div>
+
+        {budzet && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white p-4 text-center shadow-sm">
+              <p className="text-xs uppercase text-slate-400">Planirano</p>
+              <p className="text-xl font-semibold text-slate-900">{budzet.planirano}</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-center shadow-sm">
+              <p className="text-xs uppercase text-slate-400">Potrošeno</p>
+              <p className="text-xl font-semibold text-slate-900">{budzet.potroseno}</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 text-center shadow-sm">
+              <p className="text-xs uppercase text-slate-400">Preostalo</p>
+              <p
+                className={`text-xl font-semibold ${budzet.preostalo < 0 ? 'text-red-600' : 'text-emerald-600'}`}
+              >
+                {budzet.preostalo}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-2xl bg-white p-5 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold text-slate-900">Destinacije</h2>
@@ -142,6 +166,33 @@ export default function ShareViewPage() {
               </li>
             ))}
             {checklistStavke.length === 0 && <li className="text-slate-500">Nema stavki.</li>}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold text-slate-900">Beleške</h2>
+          <ul className="space-y-2 text-sm text-slate-700">
+            {beleske.map((b) => (
+              <li key={b.id}>
+                <p className="font-medium text-slate-800">{b.naslov}</p>
+                <p className="whitespace-pre-wrap text-slate-600">{b.sadrzaj}</p>
+              </li>
+            ))}
+            {beleske.length === 0 && <li className="text-slate-500">Nema beleški.</li>}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold text-slate-900">Podsetnici</h2>
+          <ul className="space-y-1 text-sm text-slate-700">
+            {podsetnici.map((r) => (
+              <li key={r.id}>
+                <span className={r.zavrseno ? 'text-slate-400 line-through' : ''}>
+                  {r.datum} — {r.naziv}
+                </span>
+              </li>
+            ))}
+            {podsetnici.length === 0 && <li className="text-slate-500">Nema podsetnika.</li>}
           </ul>
         </div>
       </div>

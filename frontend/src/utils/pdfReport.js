@@ -1,5 +1,16 @@
 import jsPDF from 'jspdf'
 
+// jsPDF-ov ugrađeni font (Helvetica/WinAnsi) nema č/ć/đ (potvrđeno testom: ta slova se potpuno
+// gube iz teksta, npr. "Grčkoj" -> "Grkoj") — š/ž rade, ali radi doslednosti transliterišemo sve.
+const DIACRITIC_MAP = {
+  č: 'c', ć: 'c', š: 's', ž: 'z', đ: 'dj',
+  Č: 'C', Ć: 'C', Š: 'S', Ž: 'Z', Đ: 'Dj',
+}
+
+function transliterate(text) {
+  return String(text).replace(/[čćšžđČĆŠŽĐ]/g, (ch) => DIACRITIC_MAP[ch])
+}
+
 export function generateTripPdf({ plan, destinacije, aktivnosti, troskovi, checklistStavke, budget }) {
   const doc = new jsPDF()
   let y = 15
@@ -10,7 +21,7 @@ export function generateTripPdf({ plan, destinacije, aktivnosti, troskovi, check
       y = 15
     }
     doc.setFontSize(size)
-    doc.text(String(text), 14, y)
+    doc.text(transliterate(text), 14, y)
     y += gap
   }
 

@@ -19,5 +19,7 @@ namespace TripService.Models
         public List<Aktivnost> Aktivnosti { get; set; } = new();
         public List<Trosak> Troskovi { get; set; } = new();
         public List<ChecklistStavka> ChecklistStavke { get; set; } = new();
+        public List<Beleska> Beleske { get; set; } = new();
+        public List<Podsetnik> Podsetnici { get; set; } = new();
     }
 }

@@ -12,6 +12,8 @@ namespace TripService.Data
         public DbSet<Aktivnost> Aktivnosti => Set<Aktivnost>();
         public DbSet<Trosak> Troskovi => Set<Trosak>();
         public DbSet<ChecklistStavka> ChecklistStavke => Set<ChecklistStavka>();
+        public DbSet<Beleska> Beleske => Set<Beleska>();
+        public DbSet<Podsetnik> Podsetnici => Set<Podsetnik>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +42,16 @@ namespace TripService.Data
                 entity.HasMany(p => p.ChecklistStavke)
                     .WithOne()
                     .HasForeignKey(c => c.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.Beleske)
+                    .WithOne()
+                    .HasForeignKey(b => b.PlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(p => p.Podsetnici)
+                    .WithOne()
+                    .HasForeignKey(r => r.PlanId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -70,6 +82,20 @@ namespace TripService.Data
             {
                 entity.HasKey(c => c.Id);
                 entity.Property(c => c.Naziv).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<Beleska>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+                entity.Property(b => b.Naslov).IsRequired().HasMaxLength(200);
+                entity.Property(b => b.Sadrzaj).IsRequired().HasMaxLength(5000);
+            });
+
+            modelBuilder.Entity<Podsetnik>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Naziv).IsRequired().HasMaxLength(200);
+                entity.Property(r => r.Opis).HasMaxLength(2000);
             });
         }
     }

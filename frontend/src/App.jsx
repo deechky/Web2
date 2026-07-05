@@ -6,6 +6,7 @@ import TripDetailPage from './pages/TripDetailPage.jsx'
 import ShareViewPage from './pages/ShareViewPage.jsx'
 import AdminUsersPage from './pages/AdminUsersPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import AdminRoute from './components/AdminRoute.jsx'
 import Layout from './components/Layout.jsx'
 
 function App() {
@@ -23,7 +24,14 @@ function App() {
       >
         <Route path="/" element={<TripsPage />} />
         <Route path="/trips/:id" element={<TripDetailPage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

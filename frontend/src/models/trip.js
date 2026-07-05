@@ -69,6 +69,27 @@ export class ChecklistStavka {
   }
 }
 
+export class Beleska {
+  constructor({ id, planId, naslov, sadrzaj, datumKreiranja }) {
+    this.id = id
+    this.planId = planId
+    this.naslov = naslov
+    this.sadrzaj = sadrzaj
+    this.datumKreiranja = datumKreiranja
+  }
+}
+
+export class Podsetnik {
+  constructor({ id, planId, naziv, datum, opis, zavrseno }) {
+    this.id = id
+    this.planId = planId
+    this.naziv = naziv
+    this.datum = datum
+    this.opis = opis
+    this.zavrseno = zavrseno
+  }
+}
+
 export class Budget {
   constructor({ planirano, potroseno, preostalo }) {
     this.planirano = planirano

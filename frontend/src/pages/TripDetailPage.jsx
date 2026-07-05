@@ -10,6 +10,8 @@ import DestinationsSection from '../components/trips/DestinationsSection.jsx'
 import ActivitiesSection from '../components/trips/ActivitiesSection.jsx'
 import ExpensesSection from '../components/trips/ExpensesSection.jsx'
 import ChecklistSection from '../components/trips/ChecklistSection.jsx'
+import NotesSection from '../components/trips/NotesSection.jsx'
+import RemindersSection from '../components/trips/RemindersSection.jsx'
 import ShareModal from '../components/trips/ShareModal.jsx'
 
 export default function TripDetailPage() {
@@ -198,6 +200,8 @@ export default function TripDetailPage() {
       <ActivitiesSection tripId={id} onChanged={loadBudget} />
       <ExpensesSection tripId={id} onChanged={loadBudget} />
       <ChecklistSection tripId={id} />
+      <NotesSection tripId={id} />
+      <RemindersSection tripId={id} />
     </div>
   )
 }

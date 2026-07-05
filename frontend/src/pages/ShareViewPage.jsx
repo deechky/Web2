@@ -11,18 +11,33 @@ export default function ShareViewPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [editAllowed, setEditAllowed] = useState(null)
 
   const load = useCallback(async () => {
     try {
-      setData(await shareService.resolve(code))
+      const result = await shareService.resolve(code)
+      setData(result)
+      setError('')
     } catch (err) {
-      setError(err.response?.status === 410 ? 'Ovaj link je istekao.' : 'Link za deljenje nije validan.')
+      const status = err.response?.status
+      if (status === 404 || status === 410) {
+        setData(null)
+        setError(status === 410 ? 'Ovaj link je istekao.' : 'Link za deljenje nije validan ili je opozvan.')
+      }
+    } finally {
+      setLoading(false)
     }
   }, [code])
 
   useEffect(() => {
     load()
+    const intervalId = setInterval(load, 15000)
+    window.addEventListener('focus', load)
+    return () => {
+      clearInterval(intervalId)
+      window.removeEventListener('focus', load)
+    }
   }, [load])
 
   useEffect(() => {
@@ -39,16 +54,16 @@ export default function ShareViewPage() {
     navigate(`/trips/${data.planId}`)
   }
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-        <Alert type="error">{error}</Alert>
-      </div>
-    )
+  if (loading) {
+    return <p className="p-6 text-slate-500">Učitavanje...</p>
   }
 
-  if (!data) {
-    return <p className="p-6 text-slate-500">Učitavanje...</p>
+  if (error || !data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <Alert type="error">{error || 'Plan nije dostupan.'}</Alert>
+      </div>
+    )
   }
 
   if (data.tip === 'Edit') {

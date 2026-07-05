@@ -38,5 +38,16 @@ namespace TripService.Services
             return await response.Content.ReadFromJsonAsync<ShareValidationResult>(
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
         }
+
+        public async Task DeleteSharesForPlanAsync(Guid planId)
+        {
+            var sharingServiceUrl = _configuration["Services:SharingServiceUrl"];
+            var internalKey = _configuration["Internal:ApiKey"];
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"{sharingServiceUrl}/api/internal/shares/by-plan/{planId}");
+            request.Headers.Add("X-Internal-Key", internalKey);
+
+            await _httpClient.SendAsync(request);
+        }
     }
 }

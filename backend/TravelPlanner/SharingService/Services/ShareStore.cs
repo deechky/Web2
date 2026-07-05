@@ -92,6 +92,24 @@ namespace SharingService.Services
             return share;
         }
 
+        public async Task DeleteForPlanAsync(Guid planId)
+        {
+            var shares = await _db.Shares.Where(s => s.PlanId == planId).ToListAsync();
+            if (shares.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var share in shares)
+            {
+                share.Opozvan = true;
+                await CacheAsync(share);
+            }
+
+            _db.Shares.RemoveRange(shares);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task<bool> RevokeAsync(Guid id)
         {
             var share = await _db.Shares.FirstOrDefaultAsync(s => s.Id == id);

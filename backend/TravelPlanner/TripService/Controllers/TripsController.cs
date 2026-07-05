@@ -20,11 +20,13 @@ namespace TripService.Controllers
     {
         private readonly TripDbContext _db;
         private readonly PlanAccess _planAccess;
+        private readonly ShareClient _shareClient;
 
-        public TripsController(TripDbContext db, PlanAccess planAccess)
+        public TripsController(TripDbContext db, PlanAccess planAccess, ShareClient shareClient)
         {
             _db = db;
             _planAccess = planAccess;
+            _shareClient = shareClient;
         }
 
         [HttpGet]
@@ -112,6 +114,8 @@ namespace TripService.Controllers
 
             _db.Plans.Remove(plan);
             await _db.SaveChangesAsync();
+
+            await _shareClient.DeleteSharesForPlanAsync(id);
 
             return NoContent();
         }

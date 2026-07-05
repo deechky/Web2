@@ -86,9 +86,12 @@ export default function ChecklistSection({ tripId }) {
       <h2 className="mb-3 text-lg font-semibold text-slate-900">Checklist / Packing lista</h2>
       <ul className="mb-4 space-y-2">
         {items.map((item) => (
-          <li key={item.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+          <li
+            key={item.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2"
+          >
             {editingId === item.id ? (
-              <div className="flex flex-1 items-center gap-2">
+              <div className="flex w-full flex-wrap items-center gap-2">
                 <Input value={editNaziv} onChange={(e) => setEditNaziv(e.target.value)} className="flex-1" />
                 <Button onClick={() => saveEdit(item)}>Sačuvaj</Button>
                 <Button variant="secondary" onClick={cancelEdit}>
@@ -117,7 +120,7 @@ export default function ChecklistSection({ tripId }) {
         ))}
         {items.length === 0 && <li className="text-sm text-slate-500">Nema stavki.</li>}
       </ul>
-      <form onSubmit={handleAdd} className="flex gap-3">
+      <form onSubmit={handleAdd} className="flex flex-wrap gap-3">
         <Input
           label="Nova stavka"
           value={naziv}

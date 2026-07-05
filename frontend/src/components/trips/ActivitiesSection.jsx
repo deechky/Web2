@@ -102,7 +102,7 @@ export default function ActivitiesSection({ tripId, onChanged }) {
       <div className="mb-4">
         <CalendarView activities={items} onEdit={startEdit} onRemove={handleRemove} />
       </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
           label="Naziv"
           value={form.naziv}
@@ -139,16 +139,16 @@ export default function ActivitiesSection({ tripId, onChanged }) {
           ))}
         </Select>
         {error && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="error">{error}</Alert>
           </div>
         )}
         {success && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="success">{success}</Alert>
           </div>
         )}
-        <div className="col-span-2 flex gap-3">
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
           <Button type="submit">{editingId ? 'Sačuvaj izmene' : 'Dodaj aktivnost'}</Button>
           {editingId && (
             <Button type="button" variant="secondary" onClick={cancelEdit}>

@@ -121,14 +121,16 @@ export default function ExpensesSection({ tripId, onChanged }) {
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold text-slate-900">Troškovi</h2>
-      <div className="mb-4 h-64">
-        <AgGridReact
-          rowData={items}
-          columnDefs={COLUMN_DEFS}
-          context={{ onEdit: startEdit, onRemove: handleRemove }}
-        />
+      <div className="mb-4 h-64 overflow-x-auto">
+        <div className="h-full min-w-[640px]">
+          <AgGridReact
+            rowData={items}
+            columnDefs={COLUMN_DEFS}
+            context={{ onEdit: startEdit, onRemove: handleRemove }}
+          />
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
           label="Naziv"
           value={form.naziv}
@@ -159,16 +161,16 @@ export default function ExpensesSection({ tripId, onChanged }) {
           onChange={(e) => setForm((f) => ({ ...f, datum: e.target.value }))}
         />
         {error && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="error">{error}</Alert>
           </div>
         )}
         {success && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="success">{success}</Alert>
           </div>
         )}
-        <div className="col-span-2 flex gap-3">
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
           <Button type="submit">{editingId ? 'Sačuvaj izmene' : 'Dodaj trošak'}</Button>
           {editingId && (
             <Button type="button" variant="secondary" onClick={cancelEdit}>

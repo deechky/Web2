@@ -82,7 +82,7 @@ export default function TripsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-900">Moji planovi putovanja</h1>
         <Button onClick={() => setShowForm((v) => !v)}>
           {showForm ? 'Otkaži' : 'Novi plan'}
@@ -90,9 +90,9 @@ export default function TripsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="mb-6 space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+        <form onSubmit={handleCreate} className="mb-6 space-y-4 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
           <Input label="Naziv" value={naziv} onChange={(e) => setNaziv(e.target.value)} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Početni datum"
               type="date"
@@ -122,7 +122,7 @@ export default function TripsPage() {
       {success && <Alert type="success">{success}</Alert>}
       {loading && <p className="text-slate-500">Učitavanje...</p>}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {trips.map((trip) => (
           <div key={trip.id} className="rounded-2xl bg-white p-5 shadow-sm">
             <Link to={`/trips/${trip.id}`} className="text-lg font-medium text-teal-700 hover:underline">
@@ -132,7 +132,7 @@ export default function TripsPage() {
               {trip.pocetniDatum} — {trip.krajnjiDatum}
             </p>
             <p className="mt-1 text-sm text-slate-500">Budžet: {trip.planiraniBudzet}</p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 variant="secondary"
                 disabled={downloadingId === trip.id}

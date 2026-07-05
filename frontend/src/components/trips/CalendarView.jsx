@@ -21,7 +21,10 @@ export default function CalendarView({ activities, onEdit, onRemove }) {
           <p className="mb-2 text-sm font-semibold text-teal-700">{date}</p>
           <ul className="space-y-1">
             {grouped[date].map((activity) => (
-              <li key={activity.id} className="flex items-center justify-between text-sm text-slate-700">
+              <li
+                key={activity.id}
+                className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700"
+              >
                 <span>
                   {activity.vreme ? `${activity.vreme} — ` : ''}
                   {activity.naziv} ({activity.status})

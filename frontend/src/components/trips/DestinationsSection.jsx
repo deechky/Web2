@@ -87,7 +87,10 @@ export default function DestinationsSection({ tripId }) {
       <h2 className="mb-3 text-lg font-semibold text-slate-900">Destinacije</h2>
       <ul className="mb-4 space-y-2">
         {items.map((d) => (
-          <li key={d.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+          <li
+            key={d.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2"
+          >
             <span>
               {d.naziv} — {d.lokacija} ({d.datumDolaska} - {d.datumOdlaska})
             </span>
@@ -103,7 +106,7 @@ export default function DestinationsSection({ tripId }) {
         ))}
         {items.length === 0 && <li className="text-sm text-slate-500">Nema unesenih destinacija.</li>}
       </ul>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
           label="Naziv"
           value={form.naziv}
@@ -127,16 +130,16 @@ export default function DestinationsSection({ tripId }) {
           onChange={(e) => setForm((f) => ({ ...f, datumOdlaska: e.target.value }))}
         />
         {error && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="error">{error}</Alert>
           </div>
         )}
         {success && (
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Alert type="success">{success}</Alert>
           </div>
         )}
-        <div className="col-span-2 flex gap-3">
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
           <Button type="submit">{editingId ? 'Sačuvaj izmene' : 'Dodaj destinaciju'}</Button>
           {editingId && (
             <Button type="button" variant="secondary" onClick={cancelEdit}>

@@ -8,24 +8,24 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
           <Link to="/" className="text-lg font-semibold text-teal-700">
             Travel Planner
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="flex flex-wrap items-center gap-3 sm:gap-4">
             {user?.isAdmin && (
               <Link to="/admin/users" className="text-sm text-slate-600 hover:text-teal-700">
                 Admin
               </Link>
             )}
-            <span className="text-sm text-slate-500">{user?.ime}</span>
+            <span className="hidden text-sm text-slate-500 sm:inline">{user?.ime}</span>
             <Button variant="secondary" onClick={logout}>
               Odjavi se
             </Button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-5xl px-3 py-6 sm:px-4">
         <Outlet />
       </main>
     </div>

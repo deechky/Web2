@@ -95,7 +95,7 @@ export default function TripDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Link to="/" className="text-sm text-teal-600 hover:underline">
           ← Nazad na planove
         </Link>
@@ -104,7 +104,7 @@ export default function TripDetailPage() {
         </Button>
       </div>
 
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
         {editing ? (
           <form onSubmit={handleSave} className="space-y-3">
             <Input
@@ -117,7 +117,7 @@ export default function TripDetailPage() {
               value={form.opis}
               onChange={(e) => setForm((f) => ({ ...f, opis: e.target.value }))}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Input
                 label="Početni datum"
                 type="date"
@@ -144,7 +144,7 @@ export default function TripDetailPage() {
               onChange={(e) => setForm((f) => ({ ...f, napomene: e.target.value }))}
             />
             {formError && <Alert type="error">{formError}</Alert>}
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button type="submit">Sačuvaj izmene</Button>
               <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
                 Otkaži
@@ -153,7 +153,7 @@ export default function TripDetailPage() {
           </form>
         ) : (
           <>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-wrap items-start justify-between gap-2">
               <h1 className="text-2xl font-semibold text-slate-900">{plan.naziv}</h1>
               <Button variant="secondary" onClick={startEdit}>
                 Uredi plan
@@ -176,7 +176,7 @@ export default function TripDetailPage() {
       <ShareModal tripId={id} open={shareOpen} onClose={() => setShareOpen(false)} />
 
       {budget && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-2xl bg-white p-4 text-center shadow-sm">
             <p className="text-xs uppercase text-slate-400">Planirano</p>
             <p className="text-xl font-semibold text-slate-900">{budget.planirano}</p>

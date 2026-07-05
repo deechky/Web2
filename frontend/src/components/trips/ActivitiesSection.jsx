@@ -15,6 +15,7 @@ export default function ActivitiesSection({ tripId, onChanged }) {
   const { error, success, showSuccess, showError } = useFeedback()
   const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
+  const [view, setView] = useState('list')
 
   useEffect(() => {
     load()
@@ -98,9 +99,31 @@ export default function ActivitiesSection({ tripId, onChanged }) {
 
   return (
     <section className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-lg font-semibold text-slate-900">Aktivnosti (po danima)</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-slate-900">Aktivnosti (po danima)</h2>
+        <div className="flex overflow-hidden rounded-lg border border-slate-300 text-sm">
+          <button
+            type="button"
+            onClick={() => setView('list')}
+            className={`px-3 py-1 ${view === 'list' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600'}`}
+          >
+            Lista
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('calendar')}
+            className={`px-3 py-1 ${view === 'calendar' ? 'bg-teal-600 text-white' : 'bg-white text-slate-600'}`}
+          >
+            Kalendar
+          </button>
+        </div>
+      </div>
       <div className="mb-4">
-        <CalendarView activities={items} onEdit={startEdit} onRemove={handleRemove} />
+        {view === 'calendar' ? (
+          <CalendarView activities={items} initialDate={items[0]?.datum} />
+        ) : (
+          <ActivitiesAgenda activities={items} onEdit={startEdit} onRemove={handleRemove} />
+        )}
       </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input
@@ -158,5 +181,51 @@ export default function ActivitiesSection({ tripId, onChanged }) {
         </div>
       </form>
     </section>
+  )
+}
+
+function ActivitiesAgenda({ activities, onEdit, onRemove }) {
+  const grouped = activities.reduce((acc, activity) => {
+    const key = activity.datum
+    if (!acc[key]) acc[key] = []
+    acc[key].push(activity)
+    return acc
+  }, {})
+
+  const dates = Object.keys(grouped).sort()
+
+  if (dates.length === 0) {
+    return <p className="text-sm text-slate-500">Nema unesenih aktivnosti.</p>
+  }
+
+  return (
+    <div className="space-y-3">
+      {dates.map((date) => (
+        <div key={date} className="rounded-lg border border-slate-200 p-3">
+          <p className="mb-2 text-sm font-semibold text-teal-700">{date}</p>
+          <ul className="space-y-1">
+            {grouped[date].map((activity) => (
+              <li
+                key={activity.id}
+                className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-700"
+              >
+                <span>
+                  {activity.vreme ? `${activity.vreme} — ` : ''}
+                  {activity.naziv} ({activity.status})
+                </span>
+                <span className="flex gap-2">
+                  <Button variant="secondary" onClick={() => onEdit(activity)}>
+                    Uredi
+                  </Button>
+                  <Button variant="danger" onClick={() => onRemove(activity.id)}>
+                    Obriši
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   )
 }

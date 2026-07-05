@@ -162,5 +162,57 @@ namespace TripService.Mapping
             Naziv = dto.Naziv,
             Zavrseno = false
         };
+
+        public static BeleskaDto ToDto(this Beleska b) => new BeleskaDto
+        {
+            Id = b.Id,
+            PlanId = b.PlanId,
+            Naslov = b.Naslov,
+            Sadrzaj = b.Sadrzaj,
+            DatumKreiranja = b.DatumKreiranja
+        };
+
+        public static void ApplyUpdate(this Beleska b, BeleskaUpdateDto dto)
+        {
+            b.Naslov = dto.Naslov;
+            b.Sadrzaj = dto.Sadrzaj;
+        }
+
+        public static Beleska ToEntity(this BeleskaCreateDto dto, Guid planId) => new Beleska
+        {
+            Id = Guid.NewGuid(),
+            PlanId = planId,
+            Naslov = dto.Naslov,
+            Sadrzaj = dto.Sadrzaj,
+            DatumKreiranja = DateTime.UtcNow
+        };
+
+        public static PodsetnikDto ToDto(this Podsetnik r) => new PodsetnikDto
+        {
+            Id = r.Id,
+            PlanId = r.PlanId,
+            Naziv = r.Naziv,
+            Datum = r.Datum,
+            Opis = r.Opis,
+            Zavrseno = r.Zavrseno
+        };
+
+        public static void ApplyUpdate(this Podsetnik r, PodsetnikUpdateDto dto)
+        {
+            r.Naziv = dto.Naziv;
+            r.Datum = dto.Datum;
+            r.Opis = dto.Opis;
+            r.Zavrseno = dto.Zavrseno;
+        }
+
+        public static Podsetnik ToEntity(this PodsetnikCreateDto dto, Guid planId) => new Podsetnik
+        {
+            Id = Guid.NewGuid(),
+            PlanId = planId,
+            Naziv = dto.Naziv,
+            Datum = dto.Datum,
+            Opis = dto.Opis,
+            Zavrseno = false
+        };
     }
 }

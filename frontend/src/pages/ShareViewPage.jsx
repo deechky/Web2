@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import shareService from '../services/shareService'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -7,22 +7,32 @@ import Button from '../components/ui/Button.jsx'
 
 export default function ShareViewPage() {
   const { code } = useParams()
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [editAllowed, setEditAllowed] = useState(null)
 
-  useEffect(() => {
-    load()
-  }, [code])
-
-  async function load() {
+  const load = useCallback(async () => {
     try {
       setData(await shareService.resolve(code))
     } catch (err) {
       setError(err.response?.status === 410 ? 'Ovaj link je istekao.' : 'Link za deljenje nije validan.')
     }
-  }
+  }, [code])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  useEffect(() => {
+    if (data?.tip === 'Edit' && token && user?.email) {
+      shareService
+        .checkAccess(code, user.email)
+        .then((result) => setEditAllowed(result.valid))
+        .catch(() => setEditAllowed(false))
+    }
+  }, [data, token, user, code])
 
   function goToEdit() {
     sessionStorage.setItem(`shareCode:${data.planId}`, code)
@@ -46,15 +56,21 @@ export default function ShareViewPage() {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
         <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-sm">
           <p className="mb-4 text-slate-700">Ovaj link omogućava uređivanje plana.</p>
-          {token ? (
-            <Button onClick={goToEdit}>Otvori plan za uređivanje</Button>
-          ) : (
+          {!token && (
             <>
               <p className="mb-4 text-sm text-slate-500">Prijavi se da bi mogao/mogla da uređuješ.</p>
               <Link to="/login">
                 <Button>Prijavi se</Button>
               </Link>
             </>
+          )}
+          {token && editAllowed === null && <p className="text-sm text-slate-500">Proveravam pristup...</p>}
+          {token && editAllowed === true && <Button onClick={goToEdit}>Otvori plan za uređivanje</Button>}
+          {token && editAllowed === false && (
+            <Alert type="error">
+              Tvoj nalog ({user?.email}) nema pravo izmene ovog plana. Obrati se vlasniku da te doda
+              na listu.
+            </Alert>
           )}
         </div>
       </div>

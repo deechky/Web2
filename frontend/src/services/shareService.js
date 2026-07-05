@@ -1,8 +1,8 @@
 import http from '../api/http'
 
 const shareService = {
-  async create(tripId, tip) {
-    const { data } = await http.post(`/api/trips/${tripId}/shares`, { tip })
+  async create(tripId, tip, emails) {
+    const { data } = await http.post(`/api/trips/${tripId}/shares`, { tip, emails })
     return data
   },
 
@@ -17,6 +17,11 @@ const shareService = {
 
   async resolve(code) {
     const { data } = await http.get(`/api/shares/${code}`)
+    return data
+  },
+
+  async checkAccess(code, email) {
+    const { data } = await http.get(`/api/shares/${code}/validate`, { params: { email } })
     return data
   },
 }

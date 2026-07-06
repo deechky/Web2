@@ -76,6 +76,11 @@ namespace TripService.Controllers
                 return NotFound();
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Naziv))
+            {
+                return BadRequest(new { poruka = "Naziv stavke je obavezan." });
+            }
+
             stavka.ApplyUpdate(dto);
             await _db.SaveChangesAsync();
 

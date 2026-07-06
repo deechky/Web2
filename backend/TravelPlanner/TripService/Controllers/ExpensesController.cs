@@ -102,6 +102,10 @@ namespace TripService.Controllers
                 return NotFound();
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Naziv))
+            {
+                return BadRequest(new { poruka = "Naziv troška je obavezan." });
+            }
             if (dto.Iznos < 0)
             {
                 return BadRequest(new { poruka = "Iznos ne može biti negativan." });

@@ -103,6 +103,10 @@ namespace TripService.Controllers
                 return NotFound();
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Naziv) || string.IsNullOrWhiteSpace(dto.Lokacija))
+            {
+                return BadRequest(new { poruka = "Naziv i lokacija su obavezni." });
+            }
             if (dto.DatumDolaska > dto.DatumOdlaska)
             {
                 return BadRequest(new { poruka = "Datum dolaska ne može biti posle datuma odlaska." });

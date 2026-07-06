@@ -88,6 +88,10 @@ namespace TripService.Controllers
                 return NotFound();
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Naziv))
+            {
+                return BadRequest(new { poruka = "Naziv plana je obavezan." });
+            }
             if (dto.KrajnjiDatum < dto.PocetniDatum)
             {
                 return BadRequest(new { poruka = "Krajnji datum ne može biti pre početnog." });

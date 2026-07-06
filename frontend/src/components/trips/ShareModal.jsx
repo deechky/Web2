@@ -89,7 +89,7 @@ export default function ShareModal({ tripId, open, onClose }) {
                   {share.tip} — kod: <span className="font-mono">{share.kod}</span>
                 </p>
                 {share.tip === 'Edit' && (
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 break-words text-xs text-slate-500">
                     Dozvoljeni nalozi: {share.dozvoljeniEmails?.join(', ') || '—'}
                   </p>
                 )}

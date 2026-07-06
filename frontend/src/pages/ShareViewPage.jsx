@@ -190,7 +190,7 @@ export default function ShareViewPage() {
             {beleske.map((b) => (
               <li key={b.id}>
                 <p className="font-medium text-slate-800">{b.naslov}</p>
-                <p className="whitespace-pre-wrap text-slate-600">{b.sadrzaj}</p>
+                <p className="whitespace-pre-wrap break-words text-slate-600">{b.sadrzaj}</p>
               </li>
             ))}
             {beleske.length === 0 && <li className="text-slate-500">Nema beleški.</li>}

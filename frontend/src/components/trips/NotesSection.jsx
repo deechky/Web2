@@ -92,7 +92,7 @@ export default function NotesSection({ tripId }) {
                 </Button>
               </span>
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{beleska.sadrzaj}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-600">{beleska.sadrzaj}</p>
           </li>
         ))}
         {items.length === 0 && <li className="text-sm text-slate-500">Nema beleški.</li>}

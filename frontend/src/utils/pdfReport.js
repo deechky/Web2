@@ -11,7 +11,7 @@ function transliterate(text) {
   return String(text).replace(/[čćšžđČĆŠŽĐ]/g, (ch) => DIACRITIC_MAP[ch])
 }
 
-export function generateTripPdf({ plan, destinacije, aktivnosti, troskovi, checklistStavke, budget }) {
+export function generateTripPdf({ plan, destinacije, aktivnosti, troskovi, checklistStavke, beleske = [], podsetnici = [], budget }) {
   const doc = new jsPDF()
   let y = 15
 
@@ -68,6 +68,25 @@ export function generateTripPdf({ plan, destinacije, aktivnosti, troskovi, check
     line('Nema stavki.')
   } else {
     checklistStavke.forEach((c) => line(`${c.zavrseno ? '[x]' : '[ ]'} ${c.naziv}`))
+  }
+
+  section('Podsetnici')
+  if (podsetnici.length === 0) {
+    line('Nema podsetnika.')
+  } else {
+    podsetnici.forEach((r) => line(`${r.zavrseno ? '[x]' : '[ ]'} ${r.datum} — ${r.naziv}`))
+  }
+
+  section('Beleške')
+  if (beleske.length === 0) {
+    line('Nema beleški.')
+  } else {
+    beleske.forEach((b) => {
+      line(b.naslov, 11, 6)
+      doc.setFontSize(10)
+      const wrapped = doc.splitTextToSize(transliterate(b.sadrzaj), 180)
+      wrapped.forEach((row) => line(row, 10, 5))
+    })
   }
 
   doc.save(`${plan.naziv || 'plan'}.pdf`)

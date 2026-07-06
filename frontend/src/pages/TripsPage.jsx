@@ -6,6 +6,8 @@ import destinationService from '../services/destinationService'
 import activityService from '../services/activityService'
 import expenseService from '../services/expenseService'
 import checklistService from '../services/checklistService'
+import noteService from '../services/noteService'
+import reminderService from '../services/reminderService'
 import budgetService from '../services/budgetService'
 import { generateTripPdf } from '../utils/pdfReport'
 import Button from '../components/ui/Button.jsx'
@@ -64,14 +66,16 @@ export default function TripsPage() {
   async function handleDownloadPdf(trip) {
     setDownloadingId(trip.id)
     try {
-      const [destinacije, aktivnosti, troskovi, checklistStavke, budget] = await Promise.all([
+      const [destinacije, aktivnosti, troskovi, checklistStavke, beleske, podsetnici, budget] = await Promise.all([
         destinationService.getAll(trip.id),
         activityService.getAll(trip.id),
         expenseService.getAll(trip.id),
         checklistService.getAll(trip.id),
+        noteService.getAll(trip.id),
+        reminderService.getAll(trip.id),
         budgetService.get(trip.id),
       ])
-      generateTripPdf({ plan: trip, destinacije, aktivnosti, troskovi, checklistStavke, budget })
+      generateTripPdf({ plan: trip, destinacije, aktivnosti, troskovi, checklistStavke, beleske, podsetnici, budget })
       showSuccess('PDF izveštaj je preuzet.')
     } catch (err) {
       showFormError(err.response?.data?.poruka || 'Preuzimanje PDF izveštaja nije uspelo.')

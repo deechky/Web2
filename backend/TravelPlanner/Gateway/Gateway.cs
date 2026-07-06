@@ -43,12 +43,6 @@ namespace Gateway
                         builder.Services.AddReverseProxy()
                             .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-                        builder.Services.AddCors(options =>
-                        {
-                            options.AddPolicy("Frontend", policy =>
-                                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-                        });
-
                         builder.WebHost
                                     .UseKestrel()
                                     .UseContentRoot(Directory.GetCurrentDirectory())
@@ -57,7 +51,7 @@ namespace Gateway
 
                         var app = builder.Build();
 
-                        app.UseCors("Frontend");
+                        // Namerno bez UseCors ovde - dodavanje CORS-a i na Gateway-u bi dupliralo Access-Control-Allow-Origin sa servisa iza njega.
                         app.MapReverseProxy();
 
                         return app;

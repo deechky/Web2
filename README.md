@@ -5,8 +5,10 @@ planiranje putovanja: planovi, destinacije, dnevne aktivnosti (sa prikazom kroz 
 budžet, beleške, podsetnici, checklist/packing lista, korisničke uloge i deljenje plana putem koda ili
 QR koda (VIEW / EDIT pristup).
 
-Dijagrami se nalaze u [`dijagrami/`](dijagrami/): `arhitektura.svg`, `use-case.svg`, `er-model.svg`
-(izvor svakog je istoimeni `.mmd` fajl — Mermaid dijagram renderovan u SVG preko `mermaid-cli`).
+Dijagrami se nalaze u [`dijagrami/`](dijagrami/): `arhitektura.svg` i `use-case.svg`. `arhitektura.svg`
+je generisan iz istoimenog `.mmd` fajla (Mermaid dijagram renderovan u SVG preko `mermaid-cli`).
+`use-case.svg` je ručno crtan u UML notaciji (akteri kao figure, use case-ovi kao elipse, granica
+sistema, generalizacija Admin → Korisnik) radi standardnog UML izgleda.
 
 ## 1. Arhitektura sistema
 
@@ -105,103 +107,7 @@ flowchart LR
 - **Admin** — sve što i Korisnik, plus pregled svih korisnika, brisanje naloga (kaskadno briše i sve
   njegove planove) i uvid u planove svih korisnika.
 
-## 3. ER model (logička šema, database-per-service)
-
-![ER model](dijagrami/er-model.svg)
-
-```mermaid
-erDiagram
-    KORISNIK ||--o{ PLAN : "kreira (KorisnikId, cross-service)"
-    PLAN ||--o{ DESTINACIJA : ima
-    PLAN ||--o{ AKTIVNOST : ima
-    PLAN ||--o{ TROSAK : ima
-    PLAN ||--o{ CHECKLIST_STAVKA : ima
-    PLAN ||--o{ BELESKA : ima
-    PLAN ||--o{ PODSETNIK : ima
-    PLAN ||--o{ SHARE : "deljen kroz (PlanId, cross-service)"
-
-    KORISNIK {
-        guid Id
-        string Ime
-        string Email
-        string LozinkaHash
-        string Uloga
-        datetime DatumKreiranja
-    }
-    PLAN {
-        guid Id
-        guid KorisnikId
-        string Naziv
-        string Opis
-        date PocetniDatum
-        date KrajnjiDatum
-        decimal PlaniraniBudzet
-        string Napomene
-    }
-    DESTINACIJA {
-        guid Id
-        guid PlanId
-        string Naziv
-        string Lokacija
-        date DatumDolaska
-        date DatumOdlaska
-    }
-    AKTIVNOST {
-        guid Id
-        guid PlanId
-        string Naziv
-        date Datum
-        string Vreme
-        string Lokacija
-        decimal ProcenjeniTrosak
-        string Status
-    }
-    TROSAK {
-        guid Id
-        guid PlanId
-        string Naziv
-        string Kategorija
-        decimal Iznos
-        date Datum
-    }
-    CHECKLIST_STAVKA {
-        guid Id
-        guid PlanId
-        string Naziv
-        bool Zavrseno
-    }
-    BELESKA {
-        guid Id
-        guid PlanId
-        string Naslov
-        string Sadrzaj
-        datetime DatumKreiranja
-    }
-    PODSETNIK {
-        guid Id
-        guid PlanId
-        string Naziv
-        date Datum
-        string Opis
-        bool Zavrseno
-    }
-    SHARE {
-        guid Id
-        string Kod
-        guid PlanId
-        guid KreatorId
-        string Tip
-        string DozvoljeniEmails
-        datetime IstekDatum
-        bool Opozvan
-    }
-```
-
-`KORISNIK` (UsersDB), `PLAN`+ostalo (TripsDB) i `SHARE` (SharingDB) žive u **odvojenim bazama** —
-`KorisnikId` i `PlanId` su logičke, ne fizičke strane veze (nema FK preko granice servisa); unutar
-iste baze (TripsDB) sve veze od `Plan` ka ostalim tabelama su prave FK sa `ON DELETE CASCADE`.
-
-## 4. Tehnologije
+## 3. Tehnologije
 
 - **Frontend:** React 19 (Vite), Tailwind CSS v4, React Router v7, axios, Context API, AG Grid
   (community), qrcode.react, jsPDF.
@@ -209,7 +115,7 @@ iste baze (TripsDB) sve veze od `Plan` ka ostalim tabelama su prave FK sa `ON DE
   Core 8, YARP (Gateway reverse proxy), BCrypt.Net (heširanje lozinki), JWT Bearer autentikacija.
 - **Baza podataka:** Microsoft SQL Server — tri odvojene baze (`UsersDB`, `TripsDB`, `SharingDB`).
 
-## 5. Preduslovi
+## 4. Preduslovi
 
 - Visual Studio 2022 sa instaliranim **Azure Service Fabric** alatima
 - **Service Fabric SDK i Runtime**, podešen lokalni klaster (System tray → Service Fabric Local Cluster
@@ -219,7 +125,7 @@ iste baze (TripsDB) sve veze od `Plan` ka ostalim tabelama su prave FK sa `ON DE
 - **Node.js** 18+ i npm
 - (opciono) `dotnet-ef` alat: `dotnet tool install --global dotnet-ef`
 
-## 6. Pokretanje — Backend
+## 5. Pokretanje — Backend
 
 1. Proveriti da lokalni Service Fabric klaster radi.
 
@@ -255,7 +161,7 @@ iste baze (TripsDB) sve veze od `Plan` ka ostalim tabelama su prave FK sa `ON DE
 | TripService | 8726 | http://localhost:8726/swagger |
 | SharingService | 8420 | http://localhost:8420/swagger |
 
-## 7. Pokretanje — Frontend
+## 6. Pokretanje — Frontend
 
 ```bash
 cd frontend
@@ -267,7 +173,7 @@ npm run dev
 Aplikacija je dostupna na `http://localhost:5173`. Svi HTTP pozivi idu isključivo kroz injektovane
 servise u `src/services/`, nikad direktno iz komponenti; adresa backend-a se čita iz `.env`.
 
-## 8. Podrazumevani nalozi (seed podaci)
+## 7. Podrazumevani nalozi (seed podaci)
 
 Kreirani kroz EF Core migracije prilikom prve primene na bazu:
 
@@ -280,7 +186,7 @@ Kreirani kroz EF Core migracije prilikom prve primene na bazu:
 Marko i Ana već imaju po nekoliko unapred unetih planova sa destinacijama, aktivnostima, troškovima i
 checklist stavkama, radi lakšeg testiranja bez ručnog unosa svih podataka.
 
-## 9. Deljenje plana (VIEW / EDIT)
+## 8. Deljenje plana (VIEW / EDIT)
 
 - **VIEW** — link/QR kod otvara plan u režimu pregleda, i bez prijave (`/share/{kod}`).
 - **EDIT** — zahteva prijavljen nalog **čiji je mejl na listi dozvoljenih mejlova** definisanoj prilikom
@@ -288,7 +194,7 @@ checklist stavkama, radi lakšeg testiranja bez ručnog unosa svih podataka.
   bi klijent mogao sam da pošalje), tako da se pravo izmene ne može lažno preuzeti tuđim nalogom.
 - Opoziv deljenja odmah onemogućava dalji pristup kroz taj kod.
 
-## 10. Struktura projekta
+## 9. Struktura projekta
 
 ```
 backend/TravelPlanner/       # Service Fabric solution (TravelPlanner.sln)
@@ -299,7 +205,7 @@ backend/TravelPlanner/       # Service Fabric solution (TravelPlanner.sln)
 frontend/                    # React + Vite aplikacija
 ```
 
-## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
+## 10. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 
 - SQL migracije: postoje za sva tri servisa sa bazom (Auth/Trip/Sharing).
 - Frontend podeljen po komponentama (`components/`, `pages/`), sa sopstvenim modelima (`models/`).

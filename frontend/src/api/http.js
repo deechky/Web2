@@ -21,4 +21,21 @@ http.interceptors.request.use((config) => {
   return config
 })
 
+// Istekla/nevažeća sesija -> očisti nalog i vodi na /login. Ne diramo /login ni /share
+// (javna stranica deljenja) da ne bismo napravili petlju preusmeravanja.
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      const path = window.location.pathname
+      if (!path.startsWith('/login') && !path.startsWith('/share')) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.assign('/login')
+      }
+    }
+    return Promise.reject(error)
+  },
+)
+
 export default http

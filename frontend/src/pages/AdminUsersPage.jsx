@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import userService from '../services/userService'
 import useFeedback from '../hooks/useFeedback'
+import { useAuth } from '../context/AuthContext.jsx'
 import Button from '../components/ui/Button.jsx'
 import Alert from '../components/ui/Alert.jsx'
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuth()
   const [users, setUsers] = useState([])
   const { error, success, showSuccess, showError } = useFeedback()
 
@@ -48,9 +50,13 @@ export default function AdminUsersPage() {
                 <td className="px-4 py-3">{user.email}</td>
                 <td className="px-4 py-3">{user.uloga}</td>
                 <td className="px-4 py-3 text-right">
-                  <Button variant="danger" onClick={() => handleRemove(user.id)}>
-                    Obriši
-                  </Button>
+                  {user.id === currentUser?.id ? (
+                    <span className="text-xs text-slate-400">(ti)</span>
+                  ) : (
+                    <Button variant="danger" onClick={() => handleRemove(user.id)}>
+                      Obriši
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AuthService.Data;
 using AuthService.Dtos;
@@ -45,6 +46,12 @@ namespace AuthService.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId != null && Guid.Parse(currentUserId) == id)
+            {
+                return BadRequest(new { poruka = "Ne možeš obrisati sopstveni nalog." });
+            }
+
             var user = await _db.Users.FindAsync(id);
             if (user == null)
             {

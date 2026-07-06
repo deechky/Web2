@@ -21,7 +21,9 @@ namespace AuthService.Services
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
         {
-            var emailZauzet = await _db.Users.AnyAsync(u => u.Email == dto.Email);
+            var email = dto.Email.Trim().ToLowerInvariant();
+
+            var emailZauzet = await _db.Users.AnyAsync(u => u.Email == email);
             if (emailZauzet)
             {
                 throw new InvalidOperationException("Nalog sa ovim email-om već postoji.");
@@ -31,7 +33,7 @@ namespace AuthService.Services
             {
                 Id = Guid.NewGuid(),
                 Ime = dto.Ime,
-                Email = dto.Email,
+                Email = email,
                 LozinkaHash = PasswordHasher.Hash(dto.Lozinka),
                 Uloga = UserRole.Korisnik,
                 DatumKreiranja = DateTime.UtcNow
@@ -45,7 +47,9 @@ namespace AuthService.Services
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            var email = dto.Email.Trim().ToLowerInvariant();
+
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null || !PasswordHasher.Verify(dto.Lozinka, user.LozinkaHash))
             {
                 throw new UnauthorizedAccessException("Pogrešan email ili lozinka.");

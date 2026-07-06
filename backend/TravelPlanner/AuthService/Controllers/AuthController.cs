@@ -18,6 +18,8 @@ namespace AuthService.Controllers
             _authLogic = authLogic;
         }
 
+        private static readonly Regex EmailRegex = new(@"^\S+@\S+\.\S+$", RegexOptions.Compiled);
+
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto dto)
         {
@@ -26,6 +28,14 @@ namespace AuthService.Controllers
                 string.IsNullOrWhiteSpace(dto.Lozinka))
             {
                 return BadRequest(new { poruka = "Ime, email i lozinka su obavezni." });
+            }
+            if (!EmailRegex.IsMatch(dto.Email))
+            {
+                return BadRequest(new { poruka = "Email nije u ispravnom formatu." });
+            }
+            if (dto.Lozinka.Length < 6)
+            {
+                return BadRequest(new { poruka = "Lozinka mora imati bar 6 karaktera." });
             }
 
             try

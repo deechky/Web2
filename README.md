@@ -5,10 +5,15 @@ planiranje putovanja: planovi, destinacije, dnevne aktivnosti (sa prikazom kroz 
 budžet, beleške, podsetnici, checklist/packing lista, korisničke uloge i deljenje plana putem koda ili
 QR koda (VIEW / EDIT pristup).
 
+Dijagrami se nalaze u [`dijagrami/`](dijagrami/): `arhitektura.svg`, `use-case.svg`, `er-model.svg`
+(izvor svakog je istoimeni `.mmd` fajl — Mermaid dijagram renderovan u SVG preko `mermaid-cli`).
+
 ## 1. Arhitektura sistema
 
 Mikroservisna arhitektura na **Microsoft Service Fabric** (lokalni klaster), perzistencija u
 **Microsoft SQL Server** — jedna baza po servisu (database-per-service), bez deljenja tabela.
+
+![Arhitektura sistema](dijagrami/arhitektura.svg)
 
 ```mermaid
 flowchart TB
@@ -63,6 +68,8 @@ Frontend u radu gađa **isključivo Gateway** (port 8141, konfigurisano kroz `VI
 
 ## 2. Use Case dijagram
 
+![Use Case dijagram](dijagrami/use-case.svg)
+
 ```mermaid
 flowchart LR
     Gost(("Gost"))
@@ -99,6 +106,8 @@ flowchart LR
   njegove planove) i uvid u planove svih korisnika.
 
 ## 3. ER model (logička šema, database-per-service)
+
+![ER model](dijagrami/er-model.svg)
 
 ```mermaid
 erDiagram

@@ -1,0 +1,26 @@
+flowchart LR
+    Gost(("Gost"))
+    Korisnik(("Korisnik"))
+    Admin(("Admin"))
+
+    Gost --> UC1["Registracija"]
+    Gost --> UC2["Prijava"]
+    Gost --> UC3["Pregled deljenog plana\n(kod / QR, VIEW)"]
+
+    Korisnik --> UC2
+    Korisnik --> UC4["Kreiranje / izmena / brisanje plana"]
+    Korisnik --> UC5["Upravljanje destinacijama"]
+    Korisnik --> UC6["Upravljanje aktivnostima\n(lista i kalendar prikaz)"]
+    Korisnik --> UC7["Evidencija troškova i budžeta"]
+    Korisnik --> UC8["Checklist / packing lista"]
+    Korisnik --> UC9["Beleške"]
+    Korisnik --> UC10["Podsetnici"]
+    Korisnik --> UC11["Deljenje plana\n(generisanje VIEW/EDIT koda i QR)"]
+    Korisnik --> UC12["Izvoz plana u PDF"]
+    Korisnik --> UC13["Pristup tuđem planu\nkroz EDIT deljenje"]
+
+    Admin --> UC2
+    Admin --> UC4
+    Admin --> UC14["Pregled svih korisnika"]
+    Admin --> UC15["Brisanje korisničkog naloga"]
+    Admin --> UC16["Pregled i administracija\nsvih planova u sistemu"]

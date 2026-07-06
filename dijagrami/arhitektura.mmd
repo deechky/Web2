@@ -1,0 +1,21 @@
+flowchart TB
+    FE["Frontend — React SPA (Vite)"]
+    GW["Gateway — stateless<br/>YARP reverse proxy · :8141"]
+    AUTH["AuthService — stateless<br/>registracija, login, JWT, uloge · :8772"]
+    TRIP["TripService — stateless<br/>planovi, destinacije, aktivnosti,<br/>troškovi, checklist, beleške, podsetnici · :8726"]
+    SHARE["SharingService — stateful<br/>deljenje plana (kod/QR) · :8420"]
+    UDB[("UsersDB")]
+    TDB[("TripsDB")]
+    SDB[("SharingDB")]
+    RC[("Reliable Collections<br/>(IReliableDictionary — keš)")]
+
+    FE -- "HTTP/REST + JWT" --> GW
+    GW --> AUTH
+    GW --> TRIP
+    GW --> SHARE
+    AUTH --> UDB
+    TRIP --> TDB
+    SHARE --> SDB
+    SHARE --> RC
+    AUTH -. "X-Internal-Key\nbriši planove obrisanog korisnika" .-> TRIP
+    SHARE -. "X-Internal-Key\npovuci plan radi VIEW deljenja" .-> TRIP

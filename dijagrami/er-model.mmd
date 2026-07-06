@@ -1,0 +1,85 @@
+erDiagram
+    KORISNIK ||--o{ PLAN : "kreira (KorisnikId, cross-service)"
+    PLAN ||--o{ DESTINACIJA : ima
+    PLAN ||--o{ AKTIVNOST : ima
+    PLAN ||--o{ TROSAK : ima
+    PLAN ||--o{ CHECKLIST_STAVKA : ima
+    PLAN ||--o{ BELESKA : ima
+    PLAN ||--o{ PODSETNIK : ima
+    PLAN ||--o{ SHARE : "deljen kroz (PlanId, cross-service)"
+
+    KORISNIK {
+        guid Id
+        string Ime
+        string Email
+        string LozinkaHash
+        string Uloga
+        datetime DatumKreiranja
+    }
+    PLAN {
+        guid Id
+        guid KorisnikId
+        string Naziv
+        string Opis
+        date PocetniDatum
+        date KrajnjiDatum
+        decimal PlaniraniBudzet
+        string Napomene
+    }
+    DESTINACIJA {
+        guid Id
+        guid PlanId
+        string Naziv
+        string Lokacija
+        date DatumDolaska
+        date DatumOdlaska
+    }
+    AKTIVNOST {
+        guid Id
+        guid PlanId
+        string Naziv
+        date Datum
+        string Vreme
+        string Lokacija
+        decimal ProcenjeniTrosak
+        string Status
+    }
+    TROSAK {
+        guid Id
+        guid PlanId
+        string Naziv
+        string Kategorija
+        decimal Iznos
+        date Datum
+    }
+    CHECKLIST_STAVKA {
+        guid Id
+        guid PlanId
+        string Naziv
+        bool Zavrseno
+    }
+    BELESKA {
+        guid Id
+        guid PlanId
+        string Naslov
+        string Sadrzaj
+        datetime DatumKreiranja
+    }
+    PODSETNIK {
+        guid Id
+        guid PlanId
+        string Naziv
+        date Datum
+        string Opis
+        bool Zavrseno
+    }
+    SHARE {
+        guid Id
+        string Kod
+        guid PlanId
+        guid KreatorId
+        string Tip
+        string DozvoljeniEmails
+        datetime IstekDatum
+        bool Opozvan
+    }

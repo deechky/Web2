@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import shareService from '../services/shareService'
 import { useAuth } from '../context/AuthContext.jsx'
@@ -13,17 +13,21 @@ export default function ShareViewPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [editAllowed, setEditAllowed] = useState(null)
+  const hasLoadedOnceRef = useRef(false)
 
   const load = useCallback(async () => {
     try {
       const result = await shareService.resolve(code)
       setData(result)
       setError('')
+      hasLoadedOnceRef.current = true
     } catch (err) {
       const status = err.response?.status
       if (status === 404 || status === 410) {
         setData(null)
         setError(status === 410 ? 'Ovaj link je istekao.' : 'Link za deljenje nije validan ili je opozvan.')
+      } else if (!status && !hasLoadedOnceRef.current) {
+        setError('Ne može da se uspostavi veza sa serverom. Proveri da li je uređaj na istoj mreži kao server.')
       }
     } finally {
       setLoading(false)

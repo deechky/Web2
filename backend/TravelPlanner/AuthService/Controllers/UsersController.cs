@@ -58,10 +58,14 @@ namespace AuthService.Controllers
                 return NotFound(new { poruka = "Korisnik nije pronađen." });
             }
 
+            var tripsDeleted = await _tripClient.DeleteUserTripsAsync(id);
+            if (!tripsDeleted)
+            {
+                return StatusCode(502, new { poruka = "Brisanje planova korisnika nije uspelo, korisnik nije obrisan." });
+            }
+
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
-
-            await _tripClient.DeleteUserTripsAsync(id);
 
             return NoContent();
         }

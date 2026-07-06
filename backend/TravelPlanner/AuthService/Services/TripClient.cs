@@ -16,7 +16,7 @@ namespace AuthService.Services
             _configuration = configuration;
         }
 
-        public async Task DeleteUserTripsAsync(Guid userId)
+        public async Task<bool> DeleteUserTripsAsync(Guid userId)
         {
             var tripServiceUrl = _configuration["Services:TripServiceUrl"];
             var internalKey = _configuration["Internal:ApiKey"];
@@ -24,7 +24,15 @@ namespace AuthService.Services
             var request = new HttpRequestMessage(HttpMethod.Delete, $"{tripServiceUrl}/api/internal/trips/by-user/{userId}");
             request.Headers.Add("X-Internal-Key", internalKey);
 
-            await _httpClient.SendAsync(request);
+            try
+            {
+                var response = await _httpClient.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException)
+            {
+                return false;
+            }
         }
     }
 }

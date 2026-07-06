@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using TripService.Data;
 using TripService.Dtos;
 using TripService.Mapping;
+using TripService.Services;
 
 namespace TripService.Controllers
 {
@@ -16,11 +17,13 @@ namespace TripService.Controllers
     {
         private readonly TripDbContext _db;
         private readonly IConfiguration _configuration;
+        private readonly ShareClient _shareClient;
 
-        public InternalController(TripDbContext db, IConfiguration configuration)
+        public InternalController(TripDbContext db, IConfiguration configuration, ShareClient shareClient)
         {
             _db = db;
             _configuration = configuration;
+            _shareClient = shareClient;
         }
 
         [HttpGet("{id}/full")]
@@ -74,6 +77,11 @@ namespace TripService.Controllers
             var plans = await _db.Plans.Where(p => p.KorisnikId == userId).ToListAsync();
             _db.Plans.RemoveRange(plans);
             await _db.SaveChangesAsync();
+
+            foreach (var plan in plans)
+            {
+                await _shareClient.DeleteSharesForPlanAsync(plan.Id);
+            }
 
             return NoContent();
         }

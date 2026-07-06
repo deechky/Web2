@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ServiceFabric.Data;
@@ -110,9 +111,9 @@ namespace SharingService.Services
             await _db.SaveChangesAsync();
         }
 
-        public async Task<bool> RevokeAsync(Guid id)
+        public async Task<bool> RevokeAsync(Guid planId, Guid id)
         {
-            var share = await _db.Shares.FirstOrDefaultAsync(s => s.Id == id);
+            var share = await _db.Shares.FirstOrDefaultAsync(s => s.Id == id && s.PlanId == planId);
             if (share == null)
             {
                 return false;
@@ -145,12 +146,11 @@ namespace SharingService.Services
         private async Task<string> GenerateUniqueCodeAsync()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var random = new Random();
 
             string kod;
             do
             {
-                kod = new string(Enumerable.Range(0, 10).Select(_ => chars[random.Next(chars.Length)]).ToArray());
+                kod = new string(Enumerable.Range(0, 10).Select(_ => chars[RandomNumberGenerator.GetInt32(chars.Length)]).ToArray());
             }
             while (await _db.Shares.AnyAsync(s => s.Kod == kod));
 

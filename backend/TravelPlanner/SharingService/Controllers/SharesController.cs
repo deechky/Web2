@@ -78,7 +78,7 @@ namespace SharingService.Controllers
                 return Forbid();
             }
 
-            var revoked = await _shareStore.RevokeAsync(id);
+            var revoked = await _shareStore.RevokeAsync(tripId, id);
             if (!revoked)
             {
                 return NotFound();

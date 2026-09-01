@@ -1,0 +1,39 @@
+# Grafana datasource provisioning - automatski poveže Prometheus/Tempo/Loki pri startu kontejnera,
+# uključujući unakrsnu navigaciju (trace -> logovi tog trace-a, trace -> metrike, log linija -> trace)
+# preko trace_id/span_id polja koja OTel SDK dodaje u strukturisane logove (faza logging/tracing).
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+
+  - name: Tempo
+    uid: tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        filterByTraceID: true
+      tracesToMetrics:
+        datasourceUid: prometheus
+
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      # Regex je usklađen sa stvarnim JSON oblikom u kom lokiexporter piše OTLP logove
+      # (npr. {"body":"...","traceid":"...","spanid":"..."}), potvrđeno slanjem probnog loga kroz
+      # ceo pipeline - "trace_id=" tekstualni obrazac se ovde nikad ne pojavljuje.
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: '"traceid":"(\w+)"'
+          name: TraceID
+          url: '$${__value.raw}'

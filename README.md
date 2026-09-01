@@ -239,6 +239,30 @@ Odgovor je JSON, npr.:
 
 Provera: `curl http://localhost:8726/health/ready` (analogno za ostale portove iz tabele ispod).
 
+### Observability infrastruktura (Docker Compose)
+
+`docker-compose.observability.yml` podiže OpenTelemetry Collector, Prometheus, Tempo, Loki i Grafanu —
+ide poredno sa postojećim deploymentom, ne dira Service Fabric klaster ni SQL Server.
+
+```bash
+docker compose -f docker-compose.observability.yml up -d
+```
+
+| Komponenta | Adresa | Napomena |
+|---|---|---|
+| Grafana | http://localhost:3000 | anonimni Admin pristup (samo lokalni razvoj/demo) |
+| Prometheus | http://localhost:9090 | scrape-uje Collector na `otel-collector:8889` |
+| OTel Collector (OTLP) | http://localhost:4317 (gRPC), :4318 (HTTP) | ovde backend servisi šalju telemetriju |
+| Loki API | http://localhost:3100 | |
+| Tempo | interno (`tempo:3200`), pristupa se kroz Grafanu | traje ~30-60s nakon starta dok ring ne postane spreman |
+
+Grafana ima automatski provisioned Prometheus/Tempo/Loki datasource-e, uključujući unakrsnu
+navigaciju: klik sa log linije (Loki) na njen trace (Tempo) preko `traceid` polja koje OTLP log
+zapisi nose. Backend instrumentacija (da servisi stvarno *šalju* telemetriju ovamo) dolazi u
+narednim fazama (logging/tracing/metrics) — infrastruktura je do sada nezavisno end-to-end
+proverena slanjem probnog OTLP trace/log/metric zapisa direktno na Collector i potvrdom da su
+stigli u Tempo/Loki/Prometheus.
+
 ## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 
 - SQL migracije: postoje za sva tri servisa sa bazom (Auth/Trip/Sharing).

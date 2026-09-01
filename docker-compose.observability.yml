@@ -1,0 +1,94 @@
+# Observability infrastruktura za Travel Planner (diplomski rad - tema "Implementacija
+# observabilnosti mikroservisne arhitekture"). Ide POREDNO sa postojećim deploymentom - backend
+# servisi i dalje rade na lokalnom Service Fabric klasteru (Windows host), baze i dalje na
+# lokalnom SQL Server-u. Ovaj compose ne dira ništa od toga, samo dodaje telemetry sloj kome
+# servisi šalju OTLP na host-publikovane portove Collector-a (localhost:4317/4318).
+#
+# Pokretanje:  docker compose -f docker-compose.observability.yml up -d
+# Gašenje:     docker compose -f docker-compose.observability.yml down
+# Grafana:     http://localhost:3000  (anonymous Admin pristup - samo za lokalni razvoj/demo)
+# Prometheus:  http://localhost:9090
+# Loki API:    http://localhost:3100
+
+networks:
+  observability:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  tempo-data:
+  loki-data:
+  grafana-data:
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.116.1
+    container_name: tp-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./observability/otel-collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317" # OTLP gRPC - backend servisi (na Windows hostu) šalju telemetriju ovde
+      - "4318:4318" # OTLP HTTP
+    networks:
+      - observability
+    depends_on:
+      - tempo
+      - loki
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    container_name: tp-prometheus
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - observability
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: tp-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./observability/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks:
+      - observability
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: tp-loki
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    volumes:
+      - ./observability/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: tp-grafana
+    environment:
+      # Anonimni Admin pristup - namerno, ovo je izolovana lokalna dev/demo instanca (localhost-only
+      # port publish), ne javno izložen servis. Za bilo šta van lokalnog razvoja ovo mora da se ukloni.
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      # Jedan mount za ceo provisioning stablo (datasources + dashboards/json) - dashboards.yaml
+      # (dashboards provider) pokazuje na dashboards/json unutar ovog istog stabla, bez ugnježdenog
+      # drugog mounta (dva mounta jedan unutar drugog ovde pucaju na Docker Desktop/Windows).
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - observability
+    depends_on:
+      - prometheus
+      - tempo
+      - loki

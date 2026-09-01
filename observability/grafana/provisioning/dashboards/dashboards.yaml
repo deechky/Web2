@@ -1,0 +1,14 @@
+# Provider za dashboard-e koje ćemo dodavati u fazi "Metrics"/"Grafana dashboards" (JSON fajlovi u
+# observability/grafana/dashboards/json/). Prazan folder sada je namerno - dashboard-i nastaju kad
+# postoje stvarne metrike da ih pokažu, ne pre toga.
+apiVersion: 1
+
+providers:
+  - name: 'Travel Planner'
+    orgId: 1
+    folder: 'Travel Planner'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

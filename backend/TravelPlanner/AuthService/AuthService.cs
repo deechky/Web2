@@ -7,9 +7,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AuthService.Data;
+using AuthService.Health;
 using AuthService.Security;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +58,12 @@ namespace AuthService
                         builder.Services.AddScoped<JwtTokenService>();
                         builder.Services.AddScoped<AuthLogic>();
                         builder.Services.AddHttpClient<TripClient>();
+
+                        builder.Services.AddHealthChecks()
+                            .AddSqlServer(
+                                builder.Configuration.GetConnectionString("UsersDB")!,
+                                name: "sqlserver-usersdb",
+                                tags: new[] { "ready" });
 
                         builder.Services.AddCors(options =>
                         {
@@ -123,6 +131,21 @@ namespace AuthService
                         app.UseCors("Frontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
+
+                        // /health/live - proces radi, ne proverava zavisnosti (za orkestraciju/restart odluke).
+                        app.MapHealthChecks("/health/live", new HealthCheckOptions
+                        {
+                            Predicate = _ => false,
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
+                        // /health/ready - proces + baza spremni da opsluže saobraćaj.
+                        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+                        {
+                            Predicate = check => check.Tags.Contains("ready"),
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
                         app.MapControllers();
 
                         return app;

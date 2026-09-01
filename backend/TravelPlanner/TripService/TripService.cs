@@ -16,7 +16,9 @@ using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using TripService.Data;
+using TripService.Health;
 using TripService.Services;
 
 namespace TripService
@@ -55,6 +57,12 @@ namespace TripService
                         builder.Services.AddScoped<PlanAccess>();
                         builder.Services.AddHttpContextAccessor();
                         builder.Services.AddHttpClient<ShareClient>();
+
+                        builder.Services.AddHealthChecks()
+                            .AddSqlServer(
+                                builder.Configuration.GetConnectionString("TripsDB")!,
+                                name: "sqlserver-tripsdb",
+                                tags: new[] { "ready" });
 
                         builder.Services.AddCors(options =>
                         {
@@ -122,6 +130,21 @@ namespace TripService
                         app.UseCors("Frontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
+
+                        // /health/live - proces radi, ne proverava zavisnosti (za orkestraciju/restart odluke).
+                        app.MapHealthChecks("/health/live", new HealthCheckOptions
+                        {
+                            Predicate = _ => false,
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
+                        // /health/ready - proces + baza spremni da opsluže saobraćaj.
+                        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+                        {
+                            Predicate = check => check.Tags.Contains("ready"),
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
                         app.MapControllers();
 
                         return app;

@@ -205,7 +205,41 @@ backend/TravelPlanner/       # Service Fabric solution (TravelPlanner.sln)
 frontend/                    # React + Vite aplikacija
 ```
 
-## 10. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
+## 10. Observabilnost
+
+Projekat se nadograđuje observability slojem (diplomski rad — tema "Implementacija observabilnosti
+mikroservisne arhitekture"). Ova sekcija raste fazno; trenutno stanje:
+
+### Health checks
+
+Svaki servis izlaže dva endpointa:
+
+| Endpoint | Šta proverava | Kad vraća 503 |
+|---|---|---|
+| `/health/live` | proces je živ, ne dodiruje zavisnosti | nikad (dok proces radi) |
+| `/health/ready` | proces + kritične zavisnosti spremni da opsluže saobraćaj | zavisnost nedostupna |
+
+- **AuthService, TripService, SharingService** — `/health/ready` proverava dostupnost sopstvene baze
+  (`UsersDB`/`TripsDB`/`SharingDB`).
+- **Gateway** — nema sopstvenu bazu; `/health/ready` proverava mrežnu dostupnost tri downstream servisa
+  (adrese čita iz iste `ReverseProxy:Clusters` konfiguracije koja se već koristi za rutiranje, bez
+  dupliranja).
+
+Odgovor je JSON, npr.:
+
+```json
+{
+  "status": "Healthy",
+  "totalDurationMs": 12.3,
+  "checks": [
+    { "name": "sqlserver-tripsdb", "status": "Healthy", "durationMs": 11.8, "description": null, "error": null }
+  ]
+}
+```
+
+Provera: `curl http://localhost:8726/health/ready` (analogno za ostale portove iz tabele ispod).
+
+## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 
 - SQL migracije: postoje za sva tri servisa sa bazom (Auth/Trip/Sharing).
 - Frontend podeljen po komponentama (`components/`, `pages/`), sa sopstvenim modelima (`models/`).

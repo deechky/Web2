@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using SharingService.Data;
+using SharingService.Health;
 using SharingService.Services;
 
 namespace SharingService
@@ -56,6 +58,12 @@ namespace SharingService
 
                         builder.Services.AddScoped<ShareStore>();
                         builder.Services.AddHttpClient<TripClient>();
+
+                        builder.Services.AddHealthChecks()
+                            .AddSqlServer(
+                                builder.Configuration.GetConnectionString("SharingDB")!,
+                                name: "sqlserver-sharingdb",
+                                tags: new[] { "ready" });
 
                         builder.Services.AddCors(options =>
                         {
@@ -123,6 +131,21 @@ namespace SharingService
                         app.UseCors("Frontend");
                         app.UseAuthentication();
                         app.UseAuthorization();
+
+                        // /health/live - proces radi, ne proverava zavisnosti (za orkestraciju/restart odluke).
+                        app.MapHealthChecks("/health/live", new HealthCheckOptions
+                        {
+                            Predicate = _ => false,
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
+                        // /health/ready - proces + baza spremni da opsluže saobraćaj.
+                        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+                        {
+                            Predicate = check => check.Tags.Contains("ready"),
+                            ResponseWriter = HealthCheckResponseWriter.WriteJson
+                        });
+
                         app.MapControllers();
 
                         return app;

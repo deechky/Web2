@@ -258,7 +258,12 @@ docker compose -f docker-compose.observability.yml up -d
 
 Grafana ima automatski provisioned Prometheus/Tempo/Loki datasource-e, uključujući unakrsnu
 navigaciju: klik sa log linije (Loki) na njen trace (Tempo) preko `traceid` polja koje OTLP log
-zapisi nose. ### Backend instrumentacija (traces, metrics, logs)
+zapisi nose, kao i dashboard **Travel Planner - Overview** (provisioned, folder "Travel Planner") sa
+RED metrikama (request rate, error rate, p95 latency), resursima (memory/CPU/GC) i log stream-om, sve
+filtrirano po servisu preko template varijable. Prazan je dok stvarni servisi ne rade (vidi ispod) -
+sve njegove PromQL/LogQL upite sam validirao direktno protiv Prometheus/Loki API-ja.
+
+### Backend instrumentacija (traces, metrics, logs)
 
 Sva 4 servisa koriste OpenTelemetry .NET SDK (`ObservabilityExtensions.AddTravelPlannerObservability`,
 identičan obrazac dupliran po servisu) i šalju OTLP ka Collector-u iz sekcije iznad:

@@ -288,6 +288,21 @@ SQL upitom/HTTP zahtevom: trace sa child SQL span-om u Tempo-u, log zapisi sa `t
 Loki-ju, 140 metrika (uklj. `dotnet_gc_*`, `http_server_request_duration_seconds`,
 `dotnet_process_memory_working_set_bytes`) u Prometheus-u.
 
+### Demonstracioni scenariji (na pravom deployovanom sistemu)
+
+Sva 4 scenarija iz specifikacije rada su izvršena nad stvarno deployovanim sistemom (Service Fabric
+lokalni klaster, prave baze) i dokumentovana sa stvarnim trace ID-jevima, log redovima i izmerenim
+vremenima u [`docs/observability-scenarios.md`](docs/observability-scenarios.md):
+
+1. **Normalan zahtev** — pravi trace kroz tri procesa (Gateway → SharingService → TripService).
+2. **Greška** — namerno izazvan pad TripService-a (SF restart koda), automatski oporavak za ~7s,
+   uhvaćen `Error`-nivo log iz health check infrastrukture.
+3. **Povećano opterećenje** — k6 load test (skripta:
+   [`observability/load-tests/scenario3-load-test.js`](observability/load-tests/scenario3-load-test.js)),
+   p95 latency izmeren nezavisno na klijentu (k6) i serveru (Prometheus) se poklapa u okviru merne greške.
+4. **Spora zavisnost** — namerno zaključan red u `TripsDB`, tracing precizno identifikuje da je
+   usko grlo tačno određen `UPDATE` (23.9s), ne ceo zahtev uopšteno.
+
 ## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 
 - SQL migracije: postoje za sva tri servisa sa bazom (Auth/Trip/Sharing).

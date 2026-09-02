@@ -258,10 +258,30 @@ docker compose -f docker-compose.observability.yml up -d
 
 Grafana ima automatski provisioned Prometheus/Tempo/Loki datasource-e, uključujući unakrsnu
 navigaciju: klik sa log linije (Loki) na njen trace (Tempo) preko `traceid` polja koje OTLP log
-zapisi nose. Backend instrumentacija (da servisi stvarno *šalju* telemetriju ovamo) dolazi u
-narednim fazama (logging/tracing/metrics) — infrastruktura je do sada nezavisno end-to-end
-proverena slanjem probnog OTLP trace/log/metric zapisa direktno na Collector i potvrdom da su
-stigli u Tempo/Loki/Prometheus.
+zapisi nose. ### Backend instrumentacija (traces, metrics, logs)
+
+Sva 4 servisa koriste OpenTelemetry .NET SDK (`ObservabilityExtensions.AddTravelPlannerObservability`,
+identičan obrazac dupliran po servisu) i šalju OTLP ka Collector-u iz sekcije iznad:
+
+- **Traces** — auto-instrumentacija za ASP.NET Core (server span po zahtevu), `HttpClient` (server-server
+  pozivi AuthService/SharingService → TripService dobijaju propagaciju konteksta besplatno, bez custom
+  koda) i SQL Server (child span po upitu). Namerno bez snimanja sirovog SQL teksta (PII rizik) — samo
+  `RecordException`.
+- **Metrics** — RED metrike iz ASP.NET Core/HttpClient instrumentacije (request duration, active
+  requests, itd.) + runtime metrike (GC, CPU, memory, thread pool, JIT) iz `RuntimeInstrumentation` — sve
+  bez custom koda.
+- **Logs** — `ILogger` i dalje piše i na Console (za lokalni dev) i preko OTel provider-a na Loki, sa
+  automatskim `trace_id`/`span_id` i ASP.NET Core kontekstom (RequestPath, ConnectionId...) u svakom zapisu.
+- Popunjen jedan poznati "tih" catch blok (`AuthService/Services/TripClient.cs`) pravim logovima.
+
+**Napomena za LogQL/PromQL upite:** pošto se `serviceNamespace: "TravelPlanner"` postavlja uz svako ime
+servisa, Loki label je `service_name="TravelPlanner/<servis>"` (npr. `TravelPlanner/trip-service`), a
+Prometheus label (posle scrape-a) je `exported_job="TravelPlanner/<servis>"` — ne goli naziv servisa.
+
+Verifikovano end-to-end izolovanim harness-om sa identičnom konfiguracijom (ista verzija paketa) i pravim
+SQL upitom/HTTP zahtevom: trace sa child SQL span-om u Tempo-u, log zapisi sa `traceid`/`spanid` u
+Loki-ju, 140 metrika (uklj. `dotnet_gc_*`, `http_server_request_duration_seconds`,
+`dotnet_process_memory_working_set_bytes`) u Prometheus-u.
 
 ## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 

@@ -13,6 +13,7 @@ using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Gateway.Health;
+using Gateway.Observability;
 
 namespace Gateway
 {
@@ -39,6 +40,8 @@ namespace Gateway
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.AddTravelPlannerObservability("gateway");
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
 

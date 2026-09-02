@@ -19,6 +19,7 @@ using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using SharingService.Data;
 using SharingService.Health;
+using SharingService.Observability;
 using SharingService.Services;
 
 namespace SharingService
@@ -46,6 +47,8 @@ namespace SharingService
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.AddTravelPlannerObservability("sharing-service");
 
                         builder.Services
                                     .AddSingleton<StatefulServiceContext>(serviceContext)

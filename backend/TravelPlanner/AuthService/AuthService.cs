@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AuthService.Data;
 using AuthService.Health;
+using AuthService.Observability;
 using AuthService.Security;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,6 +48,8 @@ namespace AuthService
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.AddTravelPlannerObservability("auth-service");
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
 

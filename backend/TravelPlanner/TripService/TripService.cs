@@ -19,6 +19,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using TripService.Data;
 using TripService.Health;
+using TripService.Observability;
 using TripService.Services;
 
 namespace TripService
@@ -46,6 +47,8 @@ namespace TripService
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
                         var builder = WebApplication.CreateBuilder();
+
+                        builder.AddTravelPlannerObservability("trip-service");
 
                         builder.Services.AddSingleton<StatelessServiceContext>(serviceContext);
 

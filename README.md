@@ -303,6 +303,20 @@ vremenima u [`docs/observability-scenarios.md`](docs/observability-scenarios.md)
 4. **Spora zavisnost** — namerno zaključan red u `TripsDB`, tracing precizno identifikuje da je
    usko grlo tačno određen `UPDATE` (23.9s), ne ceo zahtev uopšteno.
 
+### Testiranje
+
+Formalni test suite (xUnit, po jedan projekat `*.Tests` uz svaki servis, dodati u
+`TravelPlanner.sln`) pokriva health checks i observability pipeline — plan, obrazloženje obima i
+stvarni rezultati (21/21 prolazi) u [`docs/testing.md`](docs/testing.md).
+
+```bash
+cd backend/TravelPlanner
+dotnet test TripService.Tests/TripService.Tests.csproj
+dotnet test AuthService.Tests/AuthService.Tests.csproj
+dotnet test SharingService.Tests/SharingService.Tests.csproj
+dotnet test Gateway.Tests/Gateway.Tests.csproj
+```
+
 ## 11. Kriterijumi kvaliteta (kratak pregled ispunjenosti)
 
 - SQL migracije: postoje za sva tri servisa sa bazom (Auth/Trip/Sharing).

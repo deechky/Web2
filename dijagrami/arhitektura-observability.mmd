@@ -1,0 +1,42 @@
+flowchart TB
+    subgraph APP["Aplikacija — Service Fabric klaster"]
+        FE["Frontend — React SPA (Vite)"]
+        GW["Gateway — stateless<br/>YARP · :8141"]
+        AUTH["AuthService — stateless<br/>:8772"]
+        TRIP["TripService — stateless<br/>:8726"]
+        SHARE["SharingService — stateful<br/>:8420"]
+        UDB[("UsersDB")]
+        TDB[("TripsDB")]
+        SDB[("SharingDB")]
+    end
+
+    subgraph OBS["Observability infrastruktura — Docker Compose"]
+        OTEL["OpenTelemetry Collector<br/>OTLP :4317/:4318"]
+        PROM[("Prometheus<br/>:9090")]
+        TEMPO[("Tempo<br/>:3200")]
+        LOKI[("Loki<br/>:3100")]
+        GRAF["Grafana<br/>:3000<br/>dashboards + Explore"]
+    end
+
+    FE -- "HTTP/REST + JWT" --> GW
+    GW --> AUTH
+    GW --> TRIP
+    GW --> SHARE
+    AUTH --> UDB
+    TRIP --> TDB
+    SHARE --> SDB
+    AUTH -. "X-Internal-Key" .-> TRIP
+    SHARE -. "X-Internal-Key" .-> TRIP
+
+    GW -. "OTLP: traces, metrics, logs" .-> OTEL
+    AUTH -. "OTLP: traces, metrics, logs" .-> OTEL
+    TRIP -. "OTLP: traces, metrics, logs" .-> OTEL
+    SHARE -. "OTLP: traces, metrics, logs" .-> OTEL
+
+    OTEL -- "traces" --> TEMPO
+    OTEL -- "metrics (scrape)" --> PROM
+    OTEL -- "logs" --> LOKI
+
+    GRAF --> PROM
+    GRAF --> TEMPO
+    GRAF --> LOKI

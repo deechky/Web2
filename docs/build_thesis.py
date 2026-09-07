@@ -135,7 +135,7 @@ set_cell_by_row_label(t1, 'Аутор, АУ', 2, AUTHOR)
 set_cell_by_row_label(t1, 'Наслов рада, НР', 2, TITLE)
 set_cell_by_row_label(t1, 'Година, ГО', 2, YEAR)
 set_cell_by_row_label(t1, 'Физички опис рада, ФО', 2,
-    '7 поглавља / [ПОПУНИ: број страна] страна / [ПОПУНИ: број цитата] цитата / '
+    '7 поглавља / 27 страна / 10 цитата / '
     '3 табеле / 2 слике / 0 графика / 0 прилога')
 set_cell_by_row_label(t1, 'Предметна одредница/Кључне речи, ПО', 2,
     'опсервабилност, микросервисна архитектура, OpenTelemetry, дистрибуирано праћење '
@@ -156,7 +156,7 @@ set_cell_by_row_label(t2, 'Author, AU', 2, AUTHOR)
 set_cell_by_row_label(t2, 'Title, TI', 2, TITLE_EN)
 set_cell_by_row_label(t2, 'Publication year, PY', 2, YEAR)
 set_cell_by_row_label(t2, 'Physical description, PD', 2,
-    '7 chapters / [FILL IN: page count] pages / [FILL IN: reference count] references / '
+    '7 chapters / 27 pages / 10 references / '
     '3 tables / 2 figures / 0 graphs / 0 appendixes')
 set_cell_by_row_label(t2, 'Subject/Key words, S/KW', 2,
     'observability, microservice architecture, OpenTelemetry, distributed tracing, '

@@ -36,3 +36,6 @@ npm-debug.log*
 Thumbs.db
 .DS_Store
 docs/LICNI-VODIC.*
+
+# Word lock/temp files
+~$*.doc*

@@ -36,6 +36,8 @@ npm-debug.log*
 Thumbs.db
 .DS_Store
 docs/LICNI-VODIC.*
+docs/govor-za-odbranu.*
+docs/pojmovnik-za-odbranu.*
 
 # Word lock/temp files
 ~$*.doc*
